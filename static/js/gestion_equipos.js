@@ -27,3 +27,52 @@ function cargarEquipo(equipoId) {
             alert('No se pudo cargar la información del equipo.');
         });
 }
+
+function guardarEquipo() {
+    const equipoId = document.getElementById('detalle-titulo').dataset.id || null; // Obtener el ID si es edición
+    const url = equipoId ? `/equipos/${equipoId}` : '/equipos'; // Ruta para actualizar o crear
+    const method = equipoId ? 'PUT' : 'POST'; // Método HTTP para actualizar o crear
+
+    // Recolectar datos del formulario
+    const datos = {
+        eqtyp: document.getElementById('eqtyp').value,
+        shtxt: document.getElementById('shtxt').value,
+        brgew: parseFloat(document.getElementById('brgew').value) || null,
+        gewei: document.getElementById('gewei').value || null,
+        groes: document.getElementById('groes').value || null,
+        invnr: document.getElementById('invnr').value || null,
+        inbdt: document.getElementById('inbdt').value || null,
+        eqart: document.getElementById('eqart').value || null,
+        answt: parseFloat(document.getElementById('answt').value) || null,
+        ansdt: document.getElementById('ansdt').value || null,
+        waers: document.getElementById('waers').value || null,
+        herst: document.getElementById('herst').value || null,
+        herld: document.getElementById('herld').value || null,
+        typbz: document.getElementById('typbz').value || null,
+        baujj: document.getElementById('baujj').value || null,
+        baumm: document.getElementById('baumm').value || null,
+    };
+
+    // Enviar los datos al servidor
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datos)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+        } else {
+            alert('Equipo guardado exitosamente.');
+            // Opcional: Recargar la lista de equipos
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error al guardar el equipo:', error);
+        alert('Ocurrió un error al guardar el equipo.');
+    });
+}
