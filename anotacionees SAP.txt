@@ -1,0 +1,5 @@
+Fecha de puesta en servicio de objeto técnico (cuando se cree un proyecto que diga fecha de entrega estimada del proyecto)
+
+Indicador ABC para objeto técnico CRITICIDAD (desplegable)
+
+ N° de clase y CLASE DE OBJETO TIPO DE EQUIPO (cual es la diferencia)
