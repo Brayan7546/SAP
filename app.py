@@ -1,30 +1,66 @@
-from flask import Flask, render_template
-from database import db, crear_tablas  # Importar la instancia de la base de datos y la función crear_tablas
+from flask import Flask, render_template, request, jsonify
+from database import (
+    db, crear_tablas,
+    crear_equipo, obtener_equipo, actualizar_equipo, eliminar_equipo, obtener_todos_equipos
+)
 from config import config
 
-def create_app(config_name):
-    app = Flask(__name__)
+# Inicializar Flask fuera de `create_app`
+app = Flask(__name__)
 
-    # Cargar la configuración desde config.py
-    app.config.from_object(config[config_name])
+# Configuración de la aplicación
+app.config.from_object(config['development'])
 
-    # Inicializar la base de datos
-    db.init_app(app)
+# Inicializar la base de datos
+db.init_app(app)
 
-    # Crear las tablas si no existen
-    with app.app_context():
-        crear_tablas()  # Llamar a la función para crear las tablas
+# Crear las tablas si no existen
+with app.app_context():
+    crear_tablas()
 
-    @app.route('/')
-    def index():
-        return render_template('base.html')
 
-    @app.route('/gestion_equipos')
-    def gestion_equipos():
-        return render_template('gestion_equipos.html')
+@app.route('/')
+def index():
+    return render_template('gestion_equipos.html')
 
-    return app
+
+@app.route('/gestion_equipos')
+def gestion_equipos():
+    return render_template('gestion_equipos.html')
+
+
+@app.route('/equipos', methods=['POST'])
+def crear():
+    datos = request.json
+    resultado = crear_equipo(datos)
+    return jsonify(resultado)
+
+@app.route('/equipos/<int:equipo_id>', methods=['GET'])
+def obtener(equipo_id):
+    equipo = obtener_equipo(equipo_id)
+    if equipo:
+        return jsonify(equipo)
+    return jsonify({'error': 'Equipo no encontrado'}), 404
+
+
+@app.route('/equipos', methods=['GET'])
+def obtener_todos():
+    equipos = obtener_todos_equipos()
+    return jsonify(equipos)
+
+
+@app.route('/equipos/<int:equipo_id>', methods=['PUT'])
+def actualizar(equipo_id):
+    datos = request.json
+    resultado = actualizar_equipo(equipo_id, datos)
+    return jsonify(resultado)
+
+
+@app.route('/equipos/<int:equipo_id>', methods=['DELETE'])
+def eliminar(equipo_id):
+    resultado = eliminar_equipo(equipo_id)
+    return jsonify(resultado)
+
 
 if __name__ == '__main__':
-    app = create_app('development')  # Puedes cambiar 'development' a 'production' si es necesario
     app.run(debug=True)
