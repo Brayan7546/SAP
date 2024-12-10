@@ -29,7 +29,8 @@ def crear_tablas():
             herld VARCHAR(3),                           -- País de fabricación
             typbz VARCHAR(20),                          -- Denominación de tipo del fabricante
             baujj VARCHAR(4),                           -- Año de construcción
-            baumm VARCHAR(2)                            -- Mes de construcción
+            baumm VARCHAR(2),                           -- Mes de construcción
+            class VARCHAR(18)                          -- No de clase
         );
     ''')
 
@@ -54,13 +55,13 @@ def crear_equipo(datos):
     conn = db.connection
     cursor = conn.cursor()
     query = '''
-        INSERT INTO equipos (eqtyp, shtxt, brgew, gewei, groes, invnr, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO equipos (eqtyp, shtxt, brgew, gewei, groes, invnr, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, class)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     '''
     valores = (
         datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'), datos.get('invnr'),
         datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
-        datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm')
+        datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'), datos.get('class')
     )
     try:
         cursor.execute(query, valores)
@@ -96,13 +97,13 @@ def actualizar_equipo(equipo_id, datos):
     query = '''
         UPDATE equipos
         SET eqtyp = %s, shtxt = %s, brgew = %s, gewei = %s, groes = %s, invnr = %s, inbdt = %s, eqart = %s,
-            answt = %s, ansdt = %s, waers = %s, herst = %s, herld = %s, typbz = %s, baujj = %s, baumm = %s
+            answt = %s, ansdt = %s, waers = %s, herst = %s, herld = %s, typbz = %s, baujj = %s, baumm = %s, class = %s
         WHERE id = %s
     '''
     valores = (
         datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'), datos.get('invnr'),
         datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
-        datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'), equipo_id
+        datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'), datos.get('class'), equipo_id
     )
     try:
         cursor.execute(query, valores)

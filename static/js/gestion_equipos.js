@@ -20,6 +20,7 @@ function cargarEquipo(equipoId) {
                 <p><strong>País de fabricación:</strong> ${data.herld || 'N/A'}</p>
                 <p><strong>Ubicación técnica:</strong> ${data.tplnr || 'N/A'}</p>
                 <p><strong>Número de pieza del fabricante:</strong> ${data.mapar || 'N/A'}</p>
+                <p><strong>N° de clase:</strong> ${data.class || 'N/A'}</p>
             `;
         })
         .catch(error => {
@@ -51,6 +52,7 @@ function guardarEquipo() {
         typbz: document.getElementById('typbz').value || null,
         baujj: document.getElementById('baujj').value || null,
         baumm: document.getElementById('baumm').value || null,
+        class: document.getElementById('class').value || null,
     };
 
     // Enviar los datos al servidor
