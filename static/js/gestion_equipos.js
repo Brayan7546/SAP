@@ -30,6 +30,9 @@ function cargarEquipo(equipoId) {
 }
 
 function guardarEquipo() {
+    caracteristicas = obtenerDatosDinamicos();
+    console.log(caracteristica);
+
     const equipoId = document.getElementById('detalle-titulo').dataset.id || null; // Obtener el ID si es edición
     const url = equipoId ? `/equipos/${equipoId}` : '/equipos'; // Ruta para actualizar o crear
     const method = equipoId ? 'PUT' : 'POST'; // Método HTTP para actualizar o crear
@@ -54,7 +57,7 @@ function guardarEquipo() {
         baumm: document.getElementById('baumm').value || null,
         class: document.getElementById('class').value || null,
     };
-
+/*
     // Enviar los datos al servidor
     fetch(url, {
         method: method,
@@ -77,6 +80,7 @@ function guardarEquipo() {
         console.error('Error al guardar el equipo:', error);
         alert('Ocurrió un error al guardar el equipo.');
     });
+    */
 }
 document.addEventListener("DOMContentLoaded", () => {
     // Cargar clases al iniciar la página
@@ -135,6 +139,10 @@ function cargarClases() {
     });
 }
 
+function capitalizarPrimeraLetra(texto) {
+    return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+}
+
 // Función para cargar los campos dinámicos según la clase seleccionada
 function cargarCamposDinamicos(clase) {
     fetch(`/clases/${clase}`)
@@ -154,45 +162,54 @@ function cargarCamposDinamicos(clase) {
                     console.warn("Campo con datos incompletos:", campo);
                     return; // Ignorar campos incompletos
                 }
-
-                // Crear el contenedor de cada campo
+            
+                // Crear el contenedor principal
                 const campoDiv = document.createElement("div");
-                campoDiv.className = "col-md-6 mb-3";
-
-                // Crear el label
-                const label = document.createElement("label");
-                label.htmlFor = campo.caracteristica;
-                label.className = "form-label";
-                label.textContent = campo.denominacion;
-
+                campoDiv.className = campo.unidad ? "col-md-6 mb-3 form-floating withUnid" : "col-md-6 mb-3 form-floating";
+            
                 // Crear el input
                 const input = document.createElement("input");
                 input.type = obtenerTipoInput(campo.tipo_campo); // Determinar el tipo (NUM, CHAR, DATE)
                 input.id = campo.caracteristica;
                 input.name = campo.caracteristica;
                 input.className = "form-control";
-                input.maxLength = campo.ctd_posiciones; // Establecer la longitud máxima
-
+                input.maxLength = campo.ctd_posiciones;
+                input.placeholder = campo.unidad ? "" : " "; // Dejar vacío para form-floating, usar placeholder vacío para input-group
+            
                 // Configurar los decimales si el campo es de tipo "number"
                 if (campo.decimales && input.type === "number") {
                     input.step = Math.pow(10, -campo.decimales).toString();
                 }
-
-                // Agregar label y input al contenedor
-                campoDiv.appendChild(label);
-                campoDiv.appendChild(input);
-
-                // Crear el texto de la unidad (si aplica)
-                if (campo.unidad) {
-                    const unidadTexto = document.createElement("p");
-                    unidadTexto.className = "form-text";
-                    unidadTexto.textContent = campo.unidad;
-                    campoDiv.appendChild(unidadTexto);
+            
+                // Crear el label
+                const label = document.createElement("label");
+                label.htmlFor = campo.caracteristica;
+                label.textContent = capitalizarPrimeraLetra(campo.denominacion);
+                if (!campo.unidad) {
+                    label.className = "form-label";
                 }
-
+            
+                // Caso con unidad
+                if (campo.unidad) {
+                    // Crear un span para la unidad
+                    const unidadSpan = document.createElement("span");
+                    unidadSpan.className = "input-group-text";
+                    unidadSpan.textContent = campo.unidad;
+            
+                    // Agregar el input y el span al contenedor
+                    campoDiv.appendChild(input);
+                    campoDiv.appendChild(label);
+                    campoDiv.appendChild(unidadSpan);
+                } else {
+                    // Caso sin unidad
+                    campoDiv.appendChild(input);
+                    campoDiv.appendChild(label);
+                }
+            
                 // Agregar el contenedor al div de campos dinámicos
                 camposDinamicos.appendChild(campoDiv);
             });
+            
         })
         .catch(error => console.error("Error al cargar los campos dinámicos:", error));
 }
@@ -234,3 +251,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+function obtenerDatosDinamicos() {
+    const camposDinamicos = document.getElementById("campos-dinamicos");
+    const inputs = camposDinamicos.querySelectorAll("input, select, textarea");
+    const formDinamicData = {};
+
+    inputs.forEach(input => {
+        const caracteristica = input.name; // Usar el atributo `name` como clave
+        const valor = input.value.trim(); // Obtener el valor ingresado
+        if (caracteristica) {
+            formDinamicData[caracteristica] = valor || null; // Guardar el valor, usar `null` si está vacío
+        }
+    });
+
+    console.log("Datos dinámicos:", formDinamicData);
+    return formDinamicData; // Devolver el diccionario
+}
