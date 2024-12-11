@@ -30,14 +30,11 @@ function cargarEquipo(equipoId) {
 }
 
 function guardarEquipo() {
-    caracteristicas = obtenerDatosDinamicos();
-    console.log(caracteristica);
-
     const equipoId = document.getElementById('detalle-titulo').dataset.id || null; // Obtener el ID si es edición
     const url = equipoId ? `/equipos/${equipoId}` : '/equipos'; // Ruta para actualizar o crear
     const method = equipoId ? 'PUT' : 'POST'; // Método HTTP para actualizar o crear
 
-    // Recolectar datos del formulario
+    // Recolectar datos de los campos básicos
     const datos = {
         eqtyp: document.getElementById('eqtyp').value,
         shtxt: document.getElementById('shtxt').value,
@@ -55,9 +52,25 @@ function guardarEquipo() {
         typbz: document.getElementById('typbz').value || null,
         baujj: document.getElementById('baujj').value || null,
         baumm: document.getElementById('baumm').value || null,
-        class: document.getElementById('class').value || null,
+        class: document.getElementById('class').value || null
     };
-/*
+
+    // Recolectar campos dinámicos
+    const camposDinamicos = document.querySelectorAll('#campos-dinamicos .form-control');
+    const caracteristicas = {};
+
+    camposDinamicos.forEach(campo => {
+        const key = campo.name || campo.id; // Usar el name o id del campo como clave
+        const value = campo.value || null; // Tomar el valor del campo
+        caracteristicas[key] = value; // Agregar al objeto de características
+    });
+
+    // Agregar las características al objeto principal
+    datos.caracteristicas = JSON.stringify(caracteristicas); // Convertir a JSON
+
+    console.log("Datos enviados:", datos);
+
+
     // Enviar los datos al servidor
     fetch(url, {
         method: method,
@@ -80,8 +93,10 @@ function guardarEquipo() {
         console.error('Error al guardar el equipo:', error);
         alert('Ocurrió un error al guardar el equipo.');
     });
-    */
+    
 }
+
+
 document.addEventListener("DOMContentLoaded", () => {
     // Cargar clases al iniciar la página
     cargarClases();
