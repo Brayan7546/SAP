@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_mysqldb import MySQL
+import MySQLdb.cursors
 
 # Inicializar la base de datos
 db = MySQL()
@@ -127,3 +128,23 @@ def eliminar_equipo(equipo_id):
     finally:
         cursor.close()
 
+
+def obtener_campos_por_clase(clase):
+    conn = db.connection
+    cursor = conn.cursor()
+    query = """
+        SELECT DISTINCT caracteristica, denominacion, tipo_campo, ctd_posiciones, decimales, unidad
+        FROM clases
+        WHERE clase = %s
+    """
+    try:
+        print(f"Clase recibida: {clase}")
+        cursor.execute(query, (clase,))
+        campos = cursor.fetchall()
+        print(f"Datos crudos enviados al frontend (sin duplicados): {campos}")
+        return campos
+    except Exception as e:
+        print(f"Error al obtener campos para la clase '{clase}': {e}")
+        return []
+    finally:
+        cursor.close()

@@ -78,3 +78,159 @@ function guardarEquipo() {
         alert('Ocurrió un error al guardar el equipo.');
     });
 }
+document.addEventListener("DOMContentLoaded", () => {
+    // Cargar clases al iniciar la página
+    cargarClases();
+
+    // Manejar cambio en el campo "N° de clase"
+    const classSelect = document.getElementById("class");
+    classSelect.addEventListener("change", (event) => {
+        const claseSeleccionada = event.target.value;
+        console.log("CLASE SELECCIONADA: ", claseSeleccionada);
+        if (claseSeleccionada) {
+            cargarCamposDinamicos(claseSeleccionada);
+        } else {
+            limpiarCamposDinamicos();
+        }
+    });
+});
+
+// Lista de clases
+const clases = [
+    "BOMBAS",
+    "ARMAS_NAVALES",
+    "BATERIAS",
+    "BOTES",
+    "BOTES_BALSAS_SALVA",
+    "BUQUES",
+    "CABRES_WINCHE_GRUA",
+    "CASCO_CUBIERTA",
+    "COJINETES_EJES",
+    "COMPRESORES",
+    "COND_EVAP_INTERCAM",
+    "ENG_REDUCTORES",
+    "EQ_ELECT_RADAR_COM",
+    "EQ_ELECTRIC_TALLER",
+    "EQ_REFRIGER",
+    "EQ_RESP_BOT_EXTINT",
+    "GENERADORES",
+    "GRUP_VENT_BLOWER",
+    "HELICES",
+    "MOTORES_DIESEL",
+    "MOTORES_ELECTRICOS",
+    "MOTORES_FUERA_BOR",
+    "PLANTA_TRATAMIENTO",
+    "PURIFICADORES",
+    "TABLERO_ELECTRICO",
+];
+
+// Cargar las opciones del select "N° de clase"
+function cargarClases() {
+    const classSelect = document.getElementById("class");
+    clases.forEach(clase => {
+        const option = document.createElement("option");
+        option.value = clase;
+        option.textContent = clase;
+        classSelect.appendChild(option);
+    });
+}
+
+// Función para cargar los campos dinámicos según la clase seleccionada
+function cargarCamposDinamicos(clase) {
+    fetch(`/clases/${clase}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error al cargar los campos: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("data recibida", data)
+            const camposDinamicos = document.getElementById("campos-dinamicos");
+            limpiarCamposDinamicos(); // Limpiar campos anteriores
+
+            data.forEach(campo => {
+                if (!campo.caracteristica || !campo.denominacion || !campo.tipo_campo) {
+                    console.warn("Campo con datos incompletos:", campo);
+                    return; // Ignorar campos incompletos
+                }
+
+                // Crear el contenedor de cada campo
+                const campoDiv = document.createElement("div");
+                campoDiv.className = "col-md-6 mb-3";
+
+                // Crear el label
+                const label = document.createElement("label");
+                label.htmlFor = campo.caracteristica;
+                label.className = "form-label";
+                label.textContent = campo.denominacion;
+
+                // Crear el input
+                const input = document.createElement("input");
+                input.type = obtenerTipoInput(campo.tipo_campo); // Determinar el tipo (NUM, CHAR, DATE)
+                input.id = campo.caracteristica;
+                input.name = campo.caracteristica;
+                input.className = "form-control";
+                input.maxLength = campo.ctd_posiciones; // Establecer la longitud máxima
+
+                // Configurar los decimales si el campo es de tipo "number"
+                if (campo.decimales && input.type === "number") {
+                    input.step = Math.pow(10, -campo.decimales).toString();
+                }
+
+                // Agregar label y input al contenedor
+                campoDiv.appendChild(label);
+                campoDiv.appendChild(input);
+
+                // Crear el texto de la unidad (si aplica)
+                if (campo.unidad) {
+                    const unidadTexto = document.createElement("p");
+                    unidadTexto.className = "form-text";
+                    unidadTexto.textContent = campo.unidad;
+                    campoDiv.appendChild(unidadTexto);
+                }
+
+                // Agregar el contenedor al div de campos dinámicos
+                camposDinamicos.appendChild(campoDiv);
+            });
+        })
+        .catch(error => console.error("Error al cargar los campos dinámicos:", error));
+}
+
+// Función para limpiar los campos dinámicos
+function limpiarCamposDinamicos() {
+    const camposDinamicos = document.getElementById("campos-dinamicos");
+    camposDinamicos.innerHTML = "";
+}
+
+// Función para obtener el tipo de input basado en "tipo_campo"
+function obtenerTipoInput(tipoCampo) {
+    switch (tipoCampo) {
+        case "NUM":
+            return "number";
+        case "CHAR":
+            return "text";
+        case "DATE":
+            return "date";
+        default:
+            return "text"; // Tipo predeterminado
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const buttons = document.querySelectorAll('.tab-button');
+    const sections = document.querySelectorAll('.section');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remover la clase "active" de todos los botones y secciones
+            buttons.forEach(btn => btn.classList.remove('active'));
+            sections.forEach(section => section.classList.remove('active'));
+
+            // Activar el botón y la sección correspondiente
+            button.classList.add('active');
+            const target = document.getElementById(button.dataset.target);
+            target.classList.add('active');
+        });
+    });
+});

@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 from database import (
     db, crear_tablas,
-    crear_equipo, obtener_equipo, actualizar_equipo, eliminar_equipo, obtener_todos_equipos
+    crear_equipo, obtener_equipo, actualizar_equipo, eliminar_equipo, obtener_todos_equipos,
+    obtener_campos_por_clase
 )
 from config import config
 
@@ -60,6 +61,12 @@ def actualizar(equipo_id):
 def eliminar(equipo_id):
     resultado = eliminar_equipo(equipo_id)
     return jsonify(resultado)
+
+@app.route('/clases/<string:clase>', methods=['GET'])
+def obtener_campos(clase):
+    campos = obtener_campos_por_clase(clase)
+    return jsonify(campos)  # Devuelve los datos directamente como JSON
+
 
 
 if __name__ == '__main__':
