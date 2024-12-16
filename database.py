@@ -85,12 +85,42 @@ def obtener_equipo(equipo_id):
 
 def obtener_todos_equipos():
     conn = db.connection
-    cursor = conn.cursor()
-    query = 'SELECT * FROM equipos'
+    cursor = conn.cursor(MySQLdb.cursors.DictCursor)  # <-- DictCursor
+    query = '''
+        SELECT 
+            id, eqtyp, shtxt, brgew, gewei, groes, invnr, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, caracteristicas, class
+        FROM equipos
+    '''
     cursor.execute(query)
-    equipos = cursor.fetchall()
+    rows = cursor.fetchall()
     cursor.close()
+
+    equipos = []
+    for row in rows:
+        equipos.append({
+            'id': row['id'],
+            'eqtyp': row['eqtyp'],
+            'shtxt': row['shtxt'],
+            'brgew': row['brgew'],
+            'gewei': row['gewei'],
+            'groes': row['groes'],
+            'invnr': row['invnr'],
+            'inbdt': row['inbdt'].isoformat() if row['inbdt'] else None,
+            'eqart': row['eqart'],
+            'answt': row['answt'],
+            'ansdt': row['ansdt'].isoformat() if row['ansdt'] else None,
+            'waers': row['waers'],
+            'herst': row['herst'],
+            'herld': row['herld'],
+            'typbz': row['typbz'],
+            'baujj': row['baujj'],
+            'baumm': row['baumm'],
+            'caracteristicas': row['caracteristicas'],
+            'class': row['class']
+        })
     return equipos
+
+
 
 def actualizar_equipo(equipo_id, datos):
     conn = db.connection

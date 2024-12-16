@@ -29,9 +29,15 @@
                 {% endfor %}
             </div>
         </div>
-
-        <!-- Contenedor de detalles del equipo -->
+        
+        <!-- Contenedor principal -->
         <div class="col-md-8">
+            <!-- Botón para alternar vistas -->
+            <div class="text-end mb-3">
+                <button class="btn btn-secondary" id="toggle-view-btn" onclick="toggleVista()">Mostrar Listado</button>
+            </div>
+
+            <!-- Contenedor de detalles del equipo -->
             <div id="detalle-equipo" class="card">
                 <div class="card-body">
 
@@ -138,31 +144,110 @@
                             </form>                            
                         </div>
 
-                    <!-- Sección de Características -->
-                    <div id="section2" class="zone section">
-                        <form id="form-equipo-caracteristicas">
-                            <div class="row">
-                                <!-- Contenedor para los campos dinámicos -->
-                                <div id="campos-dinamicos" class="row">
-                                    <!-- Mensaje predeterminado -->
-                                    <div id="mensaje-campos-dinamicos" class="text-center text-muted w-100">
-                                        Por favor, seleccione el N° de clase.
+                        <!-- Sección de Características -->
+                        <div id="section2" class="zone section">
+                            <form id="form-equipo-caracteristicas">
+                                <div class="row">
+                                    <!-- Contenedor para los campos dinámicos -->
+                                    <div id="campos-dinamicos" class="row">
+                                        <!-- Mensaje predeterminado -->
+                                        <div id="mensaje-campos-dinamicos" class="text-center text-muted w-100">
+                                            Por favor, seleccione el N° de clase.
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </form>
-                    </div>
-                    </div>
-
-                    <!-- Botón para guardar los datos -->
-                    <div class="mt-3 text-end">
-                        <button type="button" class="btn btn-primary" onclick="guardarEquipo()">Guardar</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Tabla de equipos -->
+            <div id="tabla-equipos" class="card d-none">
+                <div class="card-body" style="max-height: 300px; overflow-y:auto;">
+                    <h5 class="card-title">Listado de Equipos</h5>
+                    <table class="table table-bordered table-striped mt-3">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tipo Equipo (eqtyp)</th>
+                                <th>Denominación (shtxt)</th>
+                                <th>Peso (brgew)</th>
+                                <th>Unidad Peso (gewei)</th>
+                                <th>Tamaño (groes)</th>
+                                <th>Número Inventario (invnr)</th>
+                                <th>F. puesta servicio (inbdt)</th>
+                                <th>Clase Objeto (eqart)</th>
+                                <th>Valor Adquisición (answt)</th>
+                                <th>F. Adquisición (ansdt)</th>
+                                <th>Moneda (waers)</th>
+                                <th>Fabricante (herst)</th>
+                                <th>País (herld)</th>
+                                <th>Denominación tipo (typbz)</th>
+                                <th>Año construcción (baujj)</th>
+                                <th>Mes construcción (baumm)</th>
+                                <th>Características (caracteristicas)</th>
+                                <th>Clase (class)</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for equipo in equipos %}
+                            <tr>
+                                <td>{{ equipo.id }}</td>
+                                <td>{{ equipo.eqtyp }}</td>
+                                <td>{{ equipo.shtxt }}</td>
+                                <td>{{ equipo.brgew }}</td>
+                                <td>{{ equipo.gewei }}</td>
+                                <td>{{ equipo.groes }}</td>
+                                <td>{{ equipo.invnr }}</td>
+                                <td>{{ equipo.inbdt }}</td>
+                                <td>{{ equipo.eqart }}</td>
+                                <td>{{ equipo.answt }}</td>
+                                <td>{{ equipo.ansdt }}</td>
+                                <td>{{ equipo.waers }}</td>
+                                <td>{{ equipo.herst }}</td>
+                                <td>{{ equipo.herld }}</td>
+                                <td>{{ equipo.typbz }}</td>
+                                <td>{{ equipo.baujj }}</td>
+                                <td>{{ equipo.baumm }}</td>
+                                <td>{{ equipo.caracteristicas }}</td>
+                                <td>{{ equipo.class }}</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm" onclick="cargarEquipo({{ equipo.id }})">Editar</button>
+                                    <button class="btn btn-danger btn-sm" onclick="eliminarEquipo({{ equipo.id }})">Eliminar</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>  
+                </div>
+            </div>
+
+            <!-- Botón para guardar los datos -->
+            <div class="mt-3 text-end">
+                <button type="button" class="btn btn-primary" onclick="guardarEquipo()">Guardar</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/gestion_equipos.js') }}"></script>
+<script>
+    function toggleVista() {
+        const detalleEquipo = document.getElementById('detalle-equipo');
+        const tablaEquipos = document.getElementById('tabla-equipos');
+        const toggleButton = document.getElementById('toggle-view-btn');
+    
+        if (tablaEquipos.classList.contains('d-none')) {
+            tablaEquipos.classList.remove('d-none');
+            detalleEquipo.classList.add('d-none');
+            toggleButton.textContent = "Mostrar Formulario";
+        } else {
+            tablaEquipos.classList.add('d-none');
+            detalleEquipo.classList.remove('d-none');
+            toggleButton.textContent = "Mostrar Listado";
+        }
+    }
+</script>
 {% endblock %}
