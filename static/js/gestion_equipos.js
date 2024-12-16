@@ -8,6 +8,7 @@ function cargarEquipo(equipoId) {
 
             // Actualizar el título
             detalleTitulo.textContent = `${data.invnr} - ${data.shtxt}`;
+            detalleTitulo.dataset.id = data.id;
 
             // Actualizar información
             infoEquipo.innerHTML = `
@@ -282,4 +283,29 @@ function obtenerDatosDinamicos() {
 
     console.log("Datos dinámicos:", formDinamicData);
     return formDinamicData; // Devolver el diccionario
+}
+
+
+function eliminarEquipo(id) {
+    if (!confirm('¿Está seguro de eliminar este equipo?')) return;
+
+    fetch(`/equipos/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+        } else {
+            alert('Equipo eliminado exitosamente.');
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error al eliminar el equipo:', error);
+        alert('Ocurrió un error al eliminar el equipo.');
+    });
 }

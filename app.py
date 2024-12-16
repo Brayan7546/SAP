@@ -22,12 +22,14 @@ with app.app_context():
 
 @app.route('/')
 def index():
-    return render_template('gestion_equipos.html')
+    equipos = obtener_todos_equipos()
+    return render_template('gestion_equipos.html', equipos=equipos)
 
 
 @app.route('/gestion_equipos')
 def gestion_equipos():
-    return render_template('gestion_equipos.html')
+    equipos = obtener_todos_equipos()  # Llama a la función que obtiene todos los equipos
+    return render_template('gestion_equipos.html', equipos=equipos)
 
 
 @app.route('/equipos', methods=['POST'])
