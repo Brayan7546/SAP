@@ -1,6 +1,9 @@
 from flask import Flask
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
+import pandas as pd
+import json
+import re
 
 # Inicializar la base de datos
 db = MySQL()
@@ -20,7 +23,6 @@ def crear_tablas():
             brgew DECIMAL(13, 3),                       -- Peso del objeto
             gewei VARCHAR(3),                           -- Unidad de peso
             groes VARCHAR(18),                          -- Tamaño/Dimensión
-            invnr VARCHAR(25),                          -- Número de inventario
             inbdt DATE,                                 -- Fecha de puesta en servicio de objeto técnico
             eqart VARCHAR(10),                          -- Clase de objeto / tipo de equipo
             answt DECIMAL(13, 2),                       -- Valor de adquisición
@@ -31,7 +33,13 @@ def crear_tablas():
             typbz VARCHAR(20),                          -- Denominación de tipo del fabricante
             baujj VARCHAR(4),                           -- Año de construcción
             baumm VARCHAR(2),                           -- Mes de construcción
-            class VARCHAR(18)                           -- No de clase
+            mapar VARCHAR(40),                          -- Número de pieza de fabricante
+            serge VARCHAR(40),                          -- Número de serie según el fabricante
+            abckz VARCHAR(1),                           -- Indicador ABC para objeto técnico CRITICIDAD
+            gewrk VARCHAR(8),                           -- Puesto trabajo responsable medidas mantenimient DIVISIÓN DE MANTENIMIENTO
+            tplnr VARCHAR(30),                          -- Ubicación técnica
+            class VARCHAR(18),                          -- No de clase
+            caracteristicas JSON
         );
     ''')
 
@@ -56,13 +64,13 @@ def crear_equipo(datos):
     conn = db.connection
     cursor = conn.cursor()
     query = '''
-        INSERT INTO equipos (eqtyp, shtxt, brgew, gewei, groes, invnr, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, class, caracteristicas)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO equipos (eqtyp, shtxt, brgew, gewei, groes, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, mapar, serge, abckz, gewrk, tplnr, class, caracteristicas)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     '''
     valores = (
-        datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'), datos.get('invnr'),
-        datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
-        datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'), datos.get('class'), datos.get('caracteristicas')
+        datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'), datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
+        datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'), datos.get('mapar'), datos.get('serge'), datos.get('abckz'), datos.get('gewrk'), datos.get('tplnr'),
+        datos.get('class'), datos.get('caracteristicas')
     )
     try:
         cursor.execute(query, valores)
@@ -88,7 +96,7 @@ def obtener_todos_equipos():
     cursor = conn.cursor(MySQLdb.cursors.DictCursor)  # <-- DictCursor
     query = '''
         SELECT 
-            id, eqtyp, shtxt, brgew, gewei, groes, invnr, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, caracteristicas, class
+            id, eqtyp, shtxt, brgew, gewei, groes, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, mapar, serge, abckz, gewrk, tplnr, class, caracteristicas
         FROM equipos
     '''
     cursor.execute(query)
@@ -104,7 +112,6 @@ def obtener_todos_equipos():
             'brgew': row['brgew'],
             'gewei': row['gewei'],
             'groes': row['groes'],
-            'invnr': row['invnr'],
             'inbdt': row['inbdt'].isoformat() if row['inbdt'] else None,
             'eqart': row['eqart'],
             'answt': row['answt'],
@@ -115,11 +122,15 @@ def obtener_todos_equipos():
             'typbz': row['typbz'],
             'baujj': row['baujj'],
             'baumm': row['baumm'],
-            'caracteristicas': row['caracteristicas'],
-            'class': row['class']
+            'mapar': row['mapar'],
+            'serge': row['serge'],
+            'abckz': row['abckz'],
+            'gewrk': row['gewrk'],
+            'tplnr': row['tplnr'],
+            'class': row['class'],
+            'caracteristicas': row['caracteristicas']
         })
     return equipos
-
 
 
 def actualizar_equipo(equipo_id, datos):
@@ -127,14 +138,17 @@ def actualizar_equipo(equipo_id, datos):
     cursor = conn.cursor()
     query = '''
         UPDATE equipos
-        SET eqtyp = %s, shtxt = %s, brgew = %s, gewei = %s, groes = %s, invnr = %s, inbdt = %s, eqart = %s,
-            answt = %s, ansdt = %s, waers = %s, herst = %s, herld = %s, typbz = %s, baujj = %s, baumm = %s, class = %s, caracteristicas = %s
+        SET eqtyp = %s, shtxt = %s, brgew = %s, gewei = %s, groes = %s, inbdt = %s, eqart = %s,
+            answt = %s, ansdt = %s, waers = %s, herst = %s, herld = %s, typbz = %s, baujj = %s, baumm = %s,
+            mapar = %s, serge = %s, abckz = %s, gewrk = %s, tplnr = %s, class = %s, caracteristicas = %s
         WHERE id = %s
     '''
     valores = (
-        datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'), datos.get('invnr'),
+        datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'),
         datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
-        datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'), datos.get('class'), datos.get('caracteristicas'), equipo_id
+        datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'),
+        datos.get('mapar'), datos.get('serge'), datos.get('abckz'), datos.get('gewrk'), datos.get('tplnr'),
+        datos.get('class'), datos.get('caracteristicas'), equipo_id
     )
     try:
         cursor.execute(query, valores)
@@ -178,3 +192,74 @@ def obtener_campos_por_clase(clase):
         return []
     finally:
         cursor.close()
+
+
+def procesar_archivo_excel(file_path):
+    """
+    Procesa un archivo Excel y extrae datos relevantes.
+    Identifica automáticamente las columnas por su código corto (5 letras).
+    Detiene la lectura al encontrar la primera fila completamente vacía.
+    """
+    # Leer el archivo Excel
+    df = pd.read_excel(file_path)
+
+    # Normalizar los nombres de las columnas
+    df.columns = (
+        df.columns.str.strip()
+        .str.lower()
+        .str.replace(r'\s+', '_', regex=True)
+        .str.replace(r'[^\w]', '', regex=True)
+    )
+
+    # Patrón para encontrar los códigos cortos (5 letras + opcionalmente números al final)
+    patron_codigo = re.compile(r'^[a-z]{5}\d*')
+
+    # Identificar las columnas relevantes automáticamente
+    columnas_relevantes = {}
+    for col in df.columns:
+        match = patron_codigo.match(col)
+        if match:
+            codigo = match.group()[:5]  # Solo las primeras 5 letras del código
+            columnas_relevantes[codigo] = col  # Asignar el nombre original de la columna
+
+    # Mapeo automático: renombrar columnas relevantes con sus códigos cortos
+    df.rename(columns=columnas_relevantes, inplace=True)
+
+    # Identificar la primera fila completamente vacía
+    primera_fila_vacia = df[df.isnull().all(axis=1)].index.min()
+    if primera_fila_vacia is not None:
+        df = df.loc[:primera_fila_vacia - 1]  # Cortar el DataFrame
+
+    # Filtrar filas completamente vacías
+    df = df.dropna(how='all')
+
+    # Procesar filas
+    equipos = []
+    columnas_dinamicas = [col for col in df.columns if col.startswith('car') or col.startswith('val')]
+    for _, row in df.iterrows():
+        # Extraer datos relevantes
+        equipo = {codigo: row[col] for codigo, col in columnas_relevantes.items() if col in df.columns}
+        print(equipo)
+
+        # Extraer características dinámicas
+        caracteristicas = {}
+        for col in columnas_dinamicas:
+            if col.startswith('car'):
+                numero = col[3:]
+                valor_col = f'val{numero}'
+                if valor_col in df.columns and pd.notna(row[col]):
+                    caracteristicas[row[col]] = row[valor_col]
+
+        equipo['caracteristicas'] = caracteristicas
+        equipos.append(equipo)
+
+    # Limpieza de datos
+    def limpiar_datos(obj):
+        if obj is None or (isinstance(obj, float) and pd.isna(obj)):
+            return ""
+        if isinstance(obj, float):
+            return round(obj, 2)
+        return obj
+
+    equipos_limpios = json.loads(json.dumps(equipos, default=limpiar_datos, ensure_ascii=False))
+    return equipos_limpios

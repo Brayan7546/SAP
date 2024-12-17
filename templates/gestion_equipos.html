@@ -18,13 +18,18 @@
             </div>
 
             <div class="list-group">
+                <div class="text-end mb-3">
+                    <!-- Botón para cargar archivo Excel -->
+                    <button class="btn btn-success" onclick="document.getElementById('file-input').click()">Cargar Excel</button>
+                    <input type="file" id="file-input" accept=".xls,.xlsx" style="display: none;" onchange="procesarArchivo()">
+                </div>
                 <input type="text" class="form-control mb-2" placeholder="Buscar equipo" id="buscar-equipo">
                 <button class="list-group-item list-group-item-action active" onclick="mostrarFormularioNuevo()">
                     Añadir equipo
                 </button>
                 {% for equipo in equipos %}
                 <button class="list-group-item list-group-item-action" onclick="cargarEquipo('{{ equipo.id }}')">
-                    {{ equipo.invnr }} - {{ equipo.shtxt }}
+                    {{ equipo.eqtyp }} - {{ equipo.shtxt }}
                 </button>
                 {% endfor %}
             </div>
@@ -79,62 +84,82 @@
                                         <label for="groes">Tamaño/Dimensión</label>
                                     </div>
                                     <div class="col-md-6 mb-3 form-floating">
-                                        <input type="text" id="invnr" name="invnr" class="form-control" maxlength="25" placeholder="Número de inventario">
-                                        <label for="invnr">Número de inventario</label>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3 form-floating">
                                         <input type="date" id="inbdt" name="inbdt" class="form-control" placeholder="Fecha de puesta en servicio">
                                         <label for="inbdt">Fecha de puesta en servicio</label>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6 mb-3 form-floating">
                                         <input type="text" id="eqart" name="eqart" class="form-control" maxlength="10" placeholder="Clase de objeto / Tipo">
                                         <label for="eqart">Clase de objeto / Tipo</label>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-6 mb-3 form-floating">
                                         <input type="number" step="0.01" id="answt" name="answt" class="form-control" placeholder="Valor de adquisición">
                                         <label for="answt">Valor de adquisición</label>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6 mb-3 form-floating">
                                         <input type="date" id="ansdt" name="ansdt" class="form-control" placeholder="Fecha de adquisición">
                                         <label for="ansdt">Fecha de adquisición</label>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-6 mb-3 form-floating">
                                         <input type="text" id="waers" name="waers" class="form-control" maxlength="5" placeholder="Clave de moneda">
                                         <label for="waers">Clave de moneda</label>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6 mb-3 form-floating">
                                         <input type="text" id="herst" name="herst" class="form-control" maxlength="30" placeholder="Fabricante">
                                         <label for="herst">Fabricante</label>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-6 mb-3 form-floating">
                                         <input type="text" id="herld" name="herld" class="form-control" maxlength="3" placeholder="País de fabricación">
                                         <label for="herld">País de fabricación</label>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6 mb-3 form-floating">
                                         <input type="text" id="typbz" name="typbz" class="form-control" maxlength="20" placeholder="Denominación del tipo">
                                         <label for="typbz">Denominación del tipo</label>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-6 mb-3 form-floating">
                                         <input type="text" id="baujj" name="baujj" class="form-control" maxlength="4" placeholder="Año de construcción">
                                         <label for="baujj">Año de construcción</label>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6 mb-3 form-floating">
                                         <input type="text" id="baumm" name="baumm" class="form-control" maxlength="2" placeholder="Mes de construcción">
                                         <label for="baumm">Mes de construcción</label>
                                     </div>
+                                    <div class="col-md-6 mb-3 form-floating">
+                                        <input type="text" id="mapar" name="mapar" class="form-control" maxlength="40" placeholder="Número de pieza del fabricante">
+                                        <label for="mapar">Número de pieza del fabricante</label>
+                                    </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 mb-3 form-floating">
+                                        <input type="text" id="serge" name="serge" class="form-control" maxlength="40" placeholder="Número de serie según el fabricante">
+                                        <label for="serge">Número de serie según el fabricante</label>
+                                    </div>
+                                    <div class="col-md-6 mb-3 form-floating">
+                                        <input type="text" id="abckz" name="abckz" class="form-control" maxlength="1" placeholder="Indicador ABC (Criticidad)">
+                                        <label for="abckz">Indicador ABC (Criticidad)</label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3 form-floating">
+                                        <input type="text" id="gewrk" name="gewrk" class="form-control" maxlength="8" placeholder="División de mantenimiento">
+                                        <label for="gewrk">División de mantenimiento</label>
+                                    </div>
+                                    <div class="col-md-6 mb-3 form-floating">
+                                        <input type="text" id="tplnr" name="tplnr" class="form-control" maxlength="30" placeholder="Ubicación técnica">
+                                        <label for="tplnr">Ubicación técnica</label>
+                                    </div>
+                                </div>                           
+                                <div class="row">
+                                    <div class="col-md-12 mb-3 form-floating">
                                         <select id="class" name="class" class="form-select" placeholder="Seleccione una clase">
                                             <option value="" disabled selected>Seleccione una clase</option>
                                         </select>
@@ -175,7 +200,6 @@
                                 <th>Peso (brgew)</th>
                                 <th>Unidad Peso (gewei)</th>
                                 <th>Tamaño (groes)</th>
-                                <th>Número Inventario (invnr)</th>
                                 <th>F. puesta servicio (inbdt)</th>
                                 <th>Clase Objeto (eqart)</th>
                                 <th>Valor Adquisición (answt)</th>
@@ -186,6 +210,11 @@
                                 <th>Denominación tipo (typbz)</th>
                                 <th>Año construcción (baujj)</th>
                                 <th>Mes construcción (baumm)</th>
+                                <th>Número de pieza de fabricante (mapar)</th>
+                                <th>Número de serie según el fabricante (serge)</th>
+                                <th>Indicador ABC para objeto técnico CRITICIDAD (abckz)</th>
+                                <th>Puesto trabajo responsable medidas mantenimient DIVISIÓN DE MANTENIMIENTO (gewrk)</th>
+                                <th>Ubicación técnica (tplnr)</th>
                                 <th>Características (caracteristicas)</th>
                                 <th>Clase (class)</th>
                                 <th>Acciones</th>
@@ -200,7 +229,6 @@
                                 <td>{{ equipo.brgew }}</td>
                                 <td>{{ equipo.gewei }}</td>
                                 <td>{{ equipo.groes }}</td>
-                                <td>{{ equipo.invnr }}</td>
                                 <td>{{ equipo.inbdt }}</td>
                                 <td>{{ equipo.eqart }}</td>
                                 <td>{{ equipo.answt }}</td>
@@ -211,6 +239,11 @@
                                 <td>{{ equipo.typbz }}</td>
                                 <td>{{ equipo.baujj }}</td>
                                 <td>{{ equipo.baumm }}</td>
+                                <td>{{ equipo.mapar }}</td>
+                                <td>{{ equipo.serge }}</td>
+                                <td>{{ equipo.abckz }}</td>
+                                <td>{{ equipo.gewrk }}</td>
+                                <td>{{ equipo.tplnr }}</td>
                                 <td>{{ equipo.caracteristicas }}</td>
                                 <td>{{ equipo.class }}</td>
                                 <td>

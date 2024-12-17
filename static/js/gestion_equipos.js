@@ -7,7 +7,7 @@ function cargarEquipo(equipoId) {
             const infoEquipo = document.getElementById('info-equipo');
 
             // Actualizar el título
-            detalleTitulo.textContent = `${data.invnr} - ${data.shtxt}`;
+            detalleTitulo.textContent = `${data.eqtyp} - ${data.shtxt}`;
             detalleTitulo.dataset.id = data.id;
 
             // Actualizar información
@@ -42,7 +42,6 @@ function guardarEquipo() {
         brgew: parseFloat(document.getElementById('brgew').value) || null,
         gewei: document.getElementById('gewei').value || null,
         groes: document.getElementById('groes').value || null,
-        invnr: document.getElementById('invnr').value || null,
         inbdt: document.getElementById('inbdt').value || null,
         eqart: document.getElementById('eqart').value || null,
         answt: parseFloat(document.getElementById('answt').value) || null,
@@ -53,8 +52,14 @@ function guardarEquipo() {
         typbz: document.getElementById('typbz').value || null,
         baujj: document.getElementById('baujj').value || null,
         baumm: document.getElementById('baumm').value || null,
+        mapar: document.getElementById('mapar').value || null,
+        serge: document.getElementById('serge').value || null,
+        abckz: document.getElementById('abckz').value || null,
+        gewrk: document.getElementById('gewrk').value || null, 
+        tplnr: document.getElementById('tplnr').value || null,
         class: document.getElementById('class').value || null
     };
+    
 
     // Recolectar campos dinámicos
     const camposDinamicos = document.querySelectorAll('#campos-dinamicos .form-control');

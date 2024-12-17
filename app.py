@@ -1,16 +1,23 @@
 from flask import Flask, render_template, request, jsonify
+from werkzeug.utils import secure_filename
+import pandas as pd
+import os
 from database import (
     db, crear_tablas,
     crear_equipo, obtener_equipo, actualizar_equipo, eliminar_equipo, obtener_todos_equipos,
-    obtener_campos_por_clase
+    obtener_campos_por_clase, procesar_archivo_excel
 )
 from config import config
+
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'xls', 'xlsx'}
 
 # Inicializar Flask fuera de `create_app`
 app = Flask(__name__)
 
 # Configuración de la aplicación
 app.config.from_object(config['development'])
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Inicializar la base de datos
 db.init_app(app)
@@ -68,6 +75,55 @@ def eliminar(equipo_id):
 def obtener_campos(clase):
     campos = obtener_campos_por_clase(clase)
     return jsonify(campos)  # Devuelve los datos directamente como JSON
+
+# Verifica si la extensión del archivo es permitida
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def limpiar_datos(data):
+    """
+    Recorrer recursivamente la estructura de datos para reemplazar NaN, None, etc.
+    """
+    if isinstance(data, list):
+        return [limpiar_datos(item) for item in data]
+    elif isinstance(data, dict):
+        return {key: limpiar_datos(value) for key, value in data.items()}
+    elif pd.isna(data) or data is None:
+        return ""  # Reemplazar NaN y None con una cadena vacía
+    elif isinstance(data, float):  # Si es un número flotante, redondear si es necesario
+        return round(data, 2)
+    return data  # Devolver el valor sin cambios
+
+@app.route('/upload_excel', methods=['POST'])
+def upload_excel():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No se envió un archivo'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'El archivo no tiene nombre'}), 400
+
+    if file:
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+
+        try:
+            # Aquí procesarías tu archivo Excel y generarías los datos de equipos
+            equipos = procesar_archivo_excel(file_path)
+
+            # Limpiar los datos antes de enviarlos al frontend
+            equipos_limpios = limpiar_datos(equipos)
+
+            # Mostrar en consola para verificar
+            #print(json.dumps(equipos_limpios, indent=4, ensure_ascii=False))
+
+            return jsonify({'equipos': equipos_limpios})
+
+        except Exception as e:
+            return jsonify({'error': f'Error al procesar el archivo: {str(e)}'}), 500
+
+    return jsonify({'error': 'Formato de archivo no permitido'}), 400
 
 
 
