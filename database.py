@@ -2,6 +2,7 @@ from flask import Flask
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import pandas as pd
+import datetime
 import json
 import re
 
@@ -196,9 +197,7 @@ def obtener_campos_por_clase(clase):
 
 def procesar_archivo_excel(file_path):
     """
-    Procesa un archivo Excel y extrae datos relevantes.
-    Identifica automáticamente las columnas por su código corto (5 letras).
-    Detiene la lectura al encontrar la primera fila completamente vacía.
+    Procesa un archivo Excel y extrae datos relevantes y características dinámicas correctamente.
     """
     # Leer el archivo Excel
     df = pd.read_excel(file_path)
@@ -211,55 +210,49 @@ def procesar_archivo_excel(file_path):
         .str.replace(r'[^\w]', '', regex=True)
     )
 
-    # Patrón para encontrar los códigos cortos (5 letras + opcionalmente números al final)
-    patron_codigo = re.compile(r'^[a-z]{5}\d*')
-
-    # Identificar las columnas relevantes automáticamente
-    columnas_relevantes = {}
-    for col in df.columns:
-        match = patron_codigo.match(col)
+    # Identificar columnas básicas y renombrarlas usando su código corto
+    columnas_basicas = [col for col in df.columns if not col.startswith(('car', 'val'))]
+    columnas_renombradas = {}
+    for col in columnas_basicas:
+        match = re.match(r'^[a-z]{5}', col)  # Obtener las primeras 5 letras como código
         if match:
-            codigo = match.group()[:5]  # Solo las primeras 5 letras del código
-            columnas_relevantes[codigo] = col  # Asignar el nombre original de la columna
+            columnas_renombradas[col] = match.group()
 
-    # Mapeo automático: renombrar columnas relevantes con sus códigos cortos
-    df.rename(columns=columnas_relevantes, inplace=True)
+    # Renombrar las columnas básicas con sus códigos cortos
+    df.rename(columns=columnas_renombradas, inplace=True)
 
-    # Identificar la primera fila completamente vacía
-    primera_fila_vacia = df[df.isnull().all(axis=1)].index.min()
-    if primera_fila_vacia is not None:
-        df = df.loc[:primera_fila_vacia - 1]  # Cortar el DataFrame
+    # Identificar columnas car y val
+    columnas_caracteristicas = [col for col in df.columns if re.match(r'^car\d+', col)]
+    columnas_valores = [col for col in df.columns if re.match(r'^val\d+', col)]
+
+    # Ordenar columnas para asegurar que car y val estén alineados
+    columnas_caracteristicas.sort()
+    columnas_valores.sort()
 
     # Filtrar filas completamente vacías
+    primera_fila_vacia = df[df.isnull().all(axis=1)].index.min()
+    if primera_fila_vacia is not None:
+        df = df.loc[:primera_fila_vacia - 1]
     df = df.dropna(how='all')
 
     # Procesar filas
     equipos = []
-    columnas_dinamicas = [col for col in df.columns if col.startswith('car') or col.startswith('val')]
     for _, row in df.iterrows():
-        # Extraer datos relevantes
-        equipo = {codigo: row[col] for codigo, col in columnas_relevantes.items() if col in df.columns}
-        print(equipo)
+        # Extraer columnas básicas
+        equipo = {col: (str(row[col]) if isinstance(row[col], (pd.Timestamp, datetime.time)) else 
+                        row[col] if pd.notna(row[col]) else "") 
+                for col in columnas_renombradas.values()}
 
-        # Extraer características dinámicas
+        # Procesar características dinámicas
         caracteristicas = {}
-        for col in columnas_dinamicas:
-            if col.startswith('car'):
-                numero = col[3:]
-                valor_col = f'val{numero}'
-                if valor_col in df.columns and pd.notna(row[col]):
-                    caracteristicas[row[col]] = row[valor_col]
+        for car_col, val_col in zip(columnas_caracteristicas, columnas_valores):
+            if pd.notna(row[car_col]) and pd.notna(row[val_col]):
+                # Remover números entre paréntesis y limpiar la clave
+                key = re.sub(r'\(\d+\)', '', row[car_col]).strip()
+                value = row[val_col]
+                caracteristicas[key] = str(value) if isinstance(value, (pd.Timestamp, datetime.time)) else value
 
         equipo['caracteristicas'] = caracteristicas
         equipos.append(equipo)
 
-    # Limpieza de datos
-    def limpiar_datos(obj):
-        if obj is None or (isinstance(obj, float) and pd.isna(obj)):
-            return ""
-        if isinstance(obj, float):
-            return round(obj, 2)
-        return obj
-
-    equipos_limpios = json.loads(json.dumps(equipos, default=limpiar_datos, ensure_ascii=False))
-    return equipos_limpios
+    return equipos

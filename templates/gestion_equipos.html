@@ -18,18 +18,26 @@
             </div>
 
             <div class="list-group">
-                <div class="text-end mb-3">
-                    <!-- Botón para cargar archivo Excel -->
-                    <button class="btn btn-success" onclick="document.getElementById('file-input').click()">Cargar Excel</button>
-                    <input type="file" id="file-input" accept=".xls,.xlsx" style="display: none;" onchange="procesarArchivo()">
-                </div>
                 <input type="text" class="form-control mb-2" placeholder="Buscar equipo" id="buscar-equipo">
-                <button class="list-group-item list-group-item-action active" onclick="mostrarFormularioNuevo()">
-                    Añadir equipo
-                </button>
+                <div class="mb-3" style="display: flex; gap: 8px">
+                    <button class="btn-custom" onclick="mostrarFormularioNuevo()">
+                        <span style="height: 22px;">Añadir equipo</span>
+                        <i class="bi bi-plus"></i>
+                    </button>    
+
+                    <!-- Botón para cargar archivo Excel -->
+                    <button class="btn-custom-excel" onclick="document.getElementById('file-input').click()">
+                        <span style="height: 22px;">Cargar Excel</span>
+                        <i class="bi bi-file-earmark-excel"></i>
+                    </button>
+                    <input type="file" id="file-input" accept=".xls,.xlsx" style="display: none;" onchange="procesarArchivo()">
+
+                </div>
+
+                <div class="row"></div>
                 {% for equipo in equipos %}
                 <button class="list-group-item list-group-item-action" onclick="cargarEquipo('{{ equipo.id }}')">
-                    {{ equipo.eqtyp }} - {{ equipo.shtxt }}
+                    {{ equipo.shtxt }}
                 </button>
                 {% endfor %}
             </div>
@@ -263,6 +271,24 @@
             </div>
         </div>
     </div>
+     <!-- Modal para mostrar equipos -->
+     <div class="modal fade" id="modalEquipos" tabindex="-1" aria-labelledby="modalEquiposLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEquiposLabel">Equipos a Subir</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul id="lista-equipos" class="list-group"></ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmarSubida()">Confirmar Subida</button>
+                </div>
+            </div>
+        </div>
+    </div>    
 </div>
 
 <script src="{{ url_for('static', filename='js/gestion_equipos.js') }}"></script>

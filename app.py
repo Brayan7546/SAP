@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 import pandas as pd
+import json
 import os
 from database import (
     db, crear_tablas,
@@ -109,22 +110,51 @@ def upload_excel():
         file.save(file_path)
 
         try:
-            # Aquí procesarías tu archivo Excel y generarías los datos de equipos
+            # Procesar el archivo Excel
             equipos = procesar_archivo_excel(file_path)
-
-            # Limpiar los datos antes de enviarlos al frontend
-            equipos_limpios = limpiar_datos(equipos)
-
-            # Mostrar en consola para verificar
-            #print(json.dumps(equipos_limpios, indent=4, ensure_ascii=False))
-
-            return jsonify({'equipos': equipos_limpios})
+            return jsonify(equipos)  # Retorna los datos directamente en formato JSON
 
         except Exception as e:
+            print(f"Error al procesar el archivo: {str(e)}")  # Agrega este log
+            import traceback
+            traceback.print_exc()  # Muestra el error completo en la consola
             return jsonify({'error': f'Error al procesar el archivo: {str(e)}'}), 500
 
     return jsonify({'error': 'Formato de archivo no permitido'}), 400
 
+
+@app.route('/equipos/masivo', methods=['POST'])
+def subir_equipos_masivo():
+    try:
+        equipos = request.json  # Recibe los datos en formato JSON
+        print("Datos recibidos:", equipos)  # Log para depuración
+        
+        if not isinstance(equipos, list):
+            return jsonify({'error': 'Formato de datos incorrecto, se esperaba una lista'}), 400
+        
+        resultados = []
+
+        for equipo in equipos:
+            # Convertir 'caracteristicas' a JSON string si es un diccionario
+            if isinstance(equipo.get('caracteristicas'), dict):
+                equipo['caracteristicas'] = json.dumps(equipo['caracteristicas'])
+            
+            # Llamar a la función existente 'crear_equipo'
+            resultado = crear_equipo(equipo)
+            
+            if 'error' in resultado:
+                return jsonify({'error': resultado['error']}), 400
+            
+            resultados.append({
+                'id': resultado['id'],
+                'eqtyp': equipo['eqtyp'],
+                'shtxt': equipo['shtxt']
+            })
+
+        return jsonify(resultados), 200
+    except Exception as e:
+        print("Error en el servidor:", str(e))
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

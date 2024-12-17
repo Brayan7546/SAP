@@ -87,7 +87,7 @@
     display: inline-flex;
     align-items: center;
     width: 100%;
-    padding-bottom: 10px;
+    padding-bottom: 20px;
 }
 
 #navigation-info p {
@@ -115,4 +115,78 @@
 
 .list-group button {
     border-radius: 6px;
+}
+
+.list-group-item-action:focus {
+    background-color: #e5e7eb;
+    font-weight: bold;
+    color: rgb(49, 48, 48); 
+}
+
+.list-group-item {
+    background-color: transparent;
+    border: none;
+}
+
+
+/* Estilo base del botón */
+.btn-custom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #808080; /* Gris */
+    color: #ffffff; /* Texto blanco */
+    border: none;
+    border-radius: 20px; /* Bordes redondeados */
+    padding: 8px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    width: 50%; /* Ocupa todo el ancho */
+    text-align: left;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+/* Cambiar el estilo al pasar el mouse */
+.btn-custom:hover {
+    background-color: #6e6e6e; /* Gris más oscuro */
+}
+
+/* Estilo del ícono */
+.btn-custom i {
+    font-size: 21px;
+    margin-left: 10px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+
+.btn-custom-excel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #1F5936;
+    color: #ffffff; /* Texto blanco */
+    border: none;
+    border-radius: 20px; /* Bordes redondeados */
+    padding: 8px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    width: 50%; /* Ocupa todo el ancho */
+    text-align: left;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+/* Cambiar el estilo al pasar el mouse */
+.btn-custom-excel:hover {
+    background-color: #6e6e6e; /* Gris más oscuro */
+}
+
+/* Estilo del ícono */
+.btn-custom-excel i {
+    font-size: 18px;
+    margin-left: 10px;
+    font-weight: bold;
+    line-height: 1;
 }

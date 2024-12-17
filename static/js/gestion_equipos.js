@@ -1,3 +1,12 @@
+let equiposCargados = [];
+let modalEquiposInstance = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar el modal una vez al cargar la página
+    const modalElement = document.getElementById('modalEquipos');
+    modalEquiposInstance = new bootstrap.Modal(modalElement);
+});
+
 function cargarEquipo(equipoId) {
     equipoId = parseInt(equipoId, 10); // Convertir a número si es necesario
     fetch(`/equipos/${equipoId}`)
@@ -314,3 +323,110 @@ function eliminarEquipo(id) {
         alert('Ocurrió un error al eliminar el equipo.');
     });
 }
+
+
+function procesarArchivo() {
+    const fileInput = document.getElementById('file-input');
+    const file = fileInput.files[0];
+    if (!file) {
+        alert('Por favor, selecciona un archivo.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/upload_excel', { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+            equiposCargados = data;
+            mostrarEquiposModal(data);
+            fileInput.value = ''; // Asegurarse de resetear el input
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+
+function mostrarEquiposModal(equipos) {
+    console.log("Mostrando equipos:", equipos);
+
+    const lista = document.getElementById('lista-equipos');
+    lista.innerHTML = ''; // Limpiar lista anterior
+
+    equipos.forEach((equipo, index) => {
+        const item = document.createElement('li');
+        item.className = 'list-group-item';
+        item.textContent = `${index + 1}. ${equipo.shtxt || 'Sin descripción'} - Tipo: ${equipo.eqtyp || 'N/A'}`;
+        lista.appendChild(item);
+    });
+
+    // Inicializar el modal si aún no se ha hecho
+    if (!modalEquiposInstance) {
+        const modalElement = document.getElementById('modalEquipos');
+        modalEquiposInstance = new bootstrap.Modal(modalElement);
+    }
+
+    // Mostrar el modal
+    modalEquiposInstance.show();
+}
+
+function confirmarSubida() {
+    if (equiposCargados.length === 0) {
+        alert('No hay equipos para subir.');
+        return;
+    }
+
+    console.log("Datos enviados al servidor:", JSON.stringify(equiposCargados));
+
+    fetch('/equipos/masivo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(equiposCargados)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en el servidor.');
+        }
+        return response.json();
+    })
+    .then(data => {
+        alert('Equipos subidos exitosamente.');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalEquipos'));
+        modal.hide();
+        actualizarListadoEquipos(data);
+    })
+    .catch(error => {
+        console.error('Error al confirmar subida:', error);
+        alert('Error al subir los equipos.');
+    });
+}
+
+function actualizarListadoEquipos(equipos) {
+    const listaEquipos = document.querySelector('.list-group'); // Contenedor de la lista
+    listaEquipos.innerHTML = ''; // Limpiar la lista actual
+
+    equipos.forEach(equipo => {
+        const button = document.createElement('button');
+        button.className = 'list-group-item list-group-item-action';
+        button.textContent = `${equipo.eqtyp} - ${equipo.shtxt}`;
+        button.onclick = () => cargarEquipo(equipo.id);
+        listaEquipos.appendChild(button);
+    });
+
+    // Añadir botón para agregar nuevo equipo
+    const btnNuevo = document.createElement('button');
+    btnNuevo.className = 'list-group-item list-group-item-action active';
+    btnNuevo.textContent = 'Añadir equipo';
+    btnNuevo.onclick = mostrarFormularioNuevo;
+    listaEquipos.prepend(btnNuevo);
+}
+
+function cerrarModal() {
+    if (modalEquiposInstance) {
+        modalEquiposInstance.hide();
+    }
+}
+
+
