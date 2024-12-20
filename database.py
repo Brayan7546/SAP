@@ -19,6 +19,7 @@ def crear_tablas():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS equipos (
             id INT AUTO_INCREMENT PRIMARY KEY,          -- Identificador único del equipo
+            datsl DATE,                                 -- Fecha de validez del objeto técnico
             eqtyp VARCHAR(1) NOT NULL,                  -- Tipo de equipo
             shtxt VARCHAR(40) NOT NULL,                 -- Denominación
             brgew DECIMAL(13, 3),                       -- Peso del objeto
@@ -65,11 +66,11 @@ def crear_equipo(datos):
     conn = db.connection
     cursor = conn.cursor()
     query = '''
-        INSERT INTO equipos (eqtyp, shtxt, brgew, gewei, groes, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, mapar, serge, abckz, gewrk, tplnr, class, caracteristicas)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO equipos (datsl, eqtyp, shtxt, brgew, gewei, groes, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, mapar, serge, abckz, gewrk, tplnr, class, caracteristicas)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     '''
     valores = (
-        datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'), datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
+        datos['datsl'], datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'), datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
         datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'), datos.get('mapar'), datos.get('serge'), datos.get('abckz'), datos.get('gewrk'), datos.get('tplnr'),
         datos.get('class'), datos.get('caracteristicas')
     )
@@ -97,7 +98,7 @@ def obtener_todos_equipos():
     cursor = conn.cursor(MySQLdb.cursors.DictCursor)  # <-- DictCursor
     query = '''
         SELECT 
-            id, eqtyp, shtxt, brgew, gewei, groes, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, mapar, serge, abckz, gewrk, tplnr, class, caracteristicas
+            id, datsl, eqtyp, shtxt, brgew, gewei, groes, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, mapar, serge, abckz, gewrk, tplnr, class, caracteristicas
         FROM equipos
     '''
     cursor.execute(query)
@@ -108,6 +109,7 @@ def obtener_todos_equipos():
     for row in rows:
         equipos.append({
             'id': row['id'],
+            'datsl': row['datsl'].isoformat() if row['inbdt'] else None,
             'eqtyp': row['eqtyp'],
             'shtxt': row['shtxt'],
             'brgew': row['brgew'],
@@ -139,13 +141,13 @@ def actualizar_equipo(equipo_id, datos):
     cursor = conn.cursor()
     query = '''
         UPDATE equipos
-        SET eqtyp = %s, shtxt = %s, brgew = %s, gewei = %s, groes = %s, inbdt = %s, eqart = %s,
+        SET datsl = %s, eqtyp = %s, shtxt = %s, brgew = %s, gewei = %s, groes = %s, inbdt = %s, eqart = %s,
             answt = %s, ansdt = %s, waers = %s, herst = %s, herld = %s, typbz = %s, baujj = %s, baumm = %s,
             mapar = %s, serge = %s, abckz = %s, gewrk = %s, tplnr = %s, class = %s, caracteristicas = %s
         WHERE id = %s
     '''
     valores = (
-        datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'),
+        datos['datsl'], datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'),
         datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
         datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'),
         datos.get('mapar'), datos.get('serge'), datos.get('abckz'), datos.get('gewrk'), datos.get('tplnr'),
@@ -183,13 +185,10 @@ def obtener_campos_por_clase(clase):
         WHERE clase = %s
     """
     try:
-        print(f"Clase recibida: {clase}")
         cursor.execute(query, (clase,))
         campos = cursor.fetchall()
-        print(f"Datos crudos enviados al frontend (sin duplicados): {campos}")
         return campos
     except Exception as e:
-        print(f"Error al obtener campos para la clase '{clase}': {e}")
         return []
     finally:
         cursor.close()

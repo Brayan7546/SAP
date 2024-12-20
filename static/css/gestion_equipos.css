@@ -1,8 +1,15 @@
+body{
+    overflow-y: hidden;
+}
+
 #detalle-equipo{
     background-color: white;
     margin-top: 1rem;
+    margin-bottom: 1rem;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(123, 115, 235, 0.473);
+    max-height: 84vh; /* Define una altura máxima */
+    overflow-y: auto;  /* Habilita el scroll vertical */
 }
 
 .section {
@@ -17,7 +24,10 @@
     margin-right: 10px;
 }
 
-.buttons{padding: 1rem;}
+.buttons {
+    padding: 0;
+    width: auto;
+}
 
 .buttons button{
     align-items: center;
@@ -49,6 +59,11 @@
     background-color: transparent;
     min-height: 1px;
     height: 31px;
+    text-transform: lowercase;
+}
+
+.form-floating > label::first-letter{
+    text-transform: capitalize;
 }
 
 .form-floating > .form-control {
@@ -62,8 +77,8 @@
     color: rgb(0, 123, 255);
 }
 
-.form-floating > .form-control:focus ~ label::after {
-    background-color: transparent;
+.form-floating > .form-control:focus ~ label::after, .form-floating>.form-control:not(:placeholder-shown)~label::after {
+    background-color: transparent !important;
 }
 
 .withUnid{
@@ -113,11 +128,16 @@
     font-size: 18px;
 }
 
+.list-group {
+    max-height: 84vh; /* Altura máxima que permite el scroll */
+    overflow-y: auto;  /* Habilita el scroll vertical */
+}
+
 .list-group button {
     border-radius: 6px;
 }
 
-.list-group-item-action:focus {
+.list-group-item.active {
     background-color: #e5e7eb;
     font-weight: bold;
     color: rgb(49, 48, 48); 
@@ -165,14 +185,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #1F5936;
+    background-color: #335662;
     color: #ffffff; /* Texto blanco */
     border: none;
-    border-radius: 20px; /* Bordes redondeados */
     padding: 8px 15px;
     font-size: 14px;
-    font-weight: bold;
-    width: 50%; /* Ocupa todo el ancho */
+    font-weight: bold; 
     text-align: left;
     cursor: pointer;
     box-shadow: none;
@@ -180,7 +198,7 @@
 
 /* Cambiar el estilo al pasar el mouse */
 .btn-custom-excel:hover {
-    background-color: #6e6e6e; /* Gris más oscuro */
+    background-color: #27424b; /* Gris más oscuro */
 }
 
 /* Estilo del ícono */
@@ -189,4 +207,108 @@
     margin-left: 10px;
     font-weight: bold;
     line-height: 1;
+}
+
+#Denominacion label{
+    color: #003366;
+}
+
+#Denominacion input{
+    color: #003366;
+    background-color: transparent !important;
+    font-weight: bold;
+    border: none;
+    padding-left: 0;
+    padding-top: 0;
+    padding-bottom: 2px;
+    border-radius: 0;
+    text-transform: uppercase;
+}
+
+#Denominacion input:focus{
+    box-shadow: none;
+}
+
+#NoClase{
+    display: flex;
+}
+
+#NoClase label{
+    width: 40%;
+    align-content: center;
+}
+
+#btn-editar, #btn-borrar{
+    background-color: #003366;
+    color: #ffffff;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+}
+
+
+.edit-border{
+    border-bottom: 2px solid #dee2e6 !important; /* Borde inferior azul */
+    transition: border-bottom 0.3s ease; /* Transición suave */
+    color: rgb(33, 37, 41) !important;
+    font-weight: 400 !important;
+}
+
+#NavTools{
+    justify-content: space-between;
+    padding-top: 1rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    padding-bottom: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: white;
+}
+
+#fade-container {
+    position: sticky;
+    top: 60px;
+    width: 100%;
+    height: 20px; /* Altura del área del fade */
+    background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0));
+    pointer-events: none; /* Permite que los clics pasen al contenido debajo */
+    z-index: 101; /* Asegúrate de que esté por encima del contenido */
+}
+
+#content{
+    padding-top: 0;
+}
+
+/* Ocultar contenido del formulario al cargar la página */
+#detalle-equipo .card-body {
+    opacity: 0; /* Totalmente transparente */
+    visibility: hidden; /* No interactúa con el DOM */
+    transition: opacity 0.5s ease, visibility 0.5s ease; /* Transición suave */
+    height: 0;
+}
+
+#detalle-equipo .card-body.show {
+    opacity: 1; /* Totalmente visible */
+    visibility: visible; /* Se muestra */
+    height: auto;
+}
+
+/* Configuración inicial del mensaje predeterminado */
+#mensaje-predeterminado {
+    opacity: 1; /* Totalmente visible */
+    transition: opacity 0.5s ease;
+}
+
+/* Ocultar el mensaje predeterminado */
+#mensaje-predeterminado.hide {
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    padding: 0 !important;
+}
+
+#modalEquiposLabel{
+    color: #003366;
+    font-weight: bold;
 }

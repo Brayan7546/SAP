@@ -31,6 +31,7 @@ with app.app_context():
 @app.route('/')
 def index():
     equipos = obtener_todos_equipos()
+    print(equipos)
     return render_template('gestion_equipos.html', equipos=equipos)
 
 
@@ -127,7 +128,6 @@ def upload_excel():
 def subir_equipos_masivo():
     try:
         equipos = request.json  # Recibe los datos en formato JSON
-        print("Datos recibidos:", equipos)  # Log para depuración
         
         if not isinstance(equipos, list):
             return jsonify({'error': 'Formato de datos incorrecto, se esperaba una lista'}), 400
