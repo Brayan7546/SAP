@@ -899,6 +899,48 @@ async function exportarExcel() {
             'heqnr', 'hstps', 'posnr', 'lbbsa', 'b_werk', 'b_lager', 'class',
         ];
 
+        const encabezadosMap = {
+            datsl: 'datsl(008), " VALIDO EL',
+            eqtyp: 'eqtyp(001), " TIPO DE EQUIPO',
+            shtxt: 'shtxt(040), " DENOMINACIÓN',
+            brgew: 'brgew(013), " Peso del objeto',
+            gewei: 'gewei(003), " Unidad de peso',
+            groes: 'groes(018), " Tamaño/Dimensión',
+            invnr: 'invnr(025), " Número de inventario',
+            inbdt: 'inbdt(008), " Fecha de puesta en servicio de objeto técnico',
+            eqart: 'eqart(010), " CLASE DE OBJETO TIPO DE EQUIPO',
+            answt: 'answt(013), " Valor de adquisición',
+            ansdt: 'ansdt(008), " Fecha de adquisición',
+            waers: 'waers(005), " Clave de moneda',
+            herst: 'herst(030), " Fabricante del activo fijo',
+            herld: 'herld(003), " País de fabricación',
+            typbz: 'typbz(020), " Denominación de tipo del fabricante',
+            baujj: 'baujj(004), " Año de construcción',
+            baumm: 'baumm(002), " Mes de construcción',
+            mapar: 'mapar(040), " Número de pieza de fabricante',
+            serge: 'serge(030), " Número de serie según el fabricante',
+            datab: 'datab(008), " VALIDO DE',
+            swerk: 'swerk(004), " Centro de emplazamiento',
+            Local: 'Local',
+            abckz: 'abckz(001), " Indicador ABC para objeto técnico CRITICIDAD',
+            eqfnr: 'eqfnr(030), " Campo de clasificación',
+            bukrs: 'bukrs(004), " Sociedad',
+            kostl: 'kostl(010), " Ceco',
+            iwerk: 'iwerk(004), " Centro',
+            ingrp: 'ingrp(003), " Grupo planific p.servicio cliente mantenimiento',
+            gewrk: 'gewrk(008), " Puesto trabajo responsable medidas mantenimient DIVISIÓN DE MANTENIMIENTO',
+            wergw: 'wergw(004), " Centro del puesto de trabajo responsable',
+            rbnr: 'rbnr(009), " Perfil de catálogo',
+            tplnr: 'tplnr(030), " Ubicación técnica',
+            heqnr: 'heqnr(018), " Equipo superior',
+            hstps: 'hstps(004), " Posición equipo lugarmontaje(eq.sup./ubic.técn)',
+            posnr: 'posnr(004), " Posición en objeto técnico superior',
+            lbbsa: 'lbbsa(002), " Tipo stocks',
+            b_werk: 'b_werk(004)," Centro',
+            b_lager: 'b_lager(004), " Almacén"',
+            class: 'class(018), " N° de clase',
+        };
+
         // Obtener datos de la API
         const response = await fetch('/equipos');
         const data = await response.json();
@@ -913,13 +955,14 @@ async function exportarExcel() {
 
         const columnasDinamicas = [];
         for (let i = 1; i <= maxCaracteristicas; i++) {
-            columnasDinamicas.push(`car${i}`);
-            columnasDinamicas.push(`val${i}`);
+            const indexStr = i.toString().padStart(2, '0'); // Formatea el índice con 2 dígitos
+            columnasDinamicas.push(`car${indexStr}(030), " Caracteristica ${indexStr}`);
+            columnasDinamicas.push(`val${indexStr}(030), " valor`);
         }
 
         // Combinar encabezados
         const encabezados = [...columnasOrdenadas, ...columnasDinamicas];
-        const filaEncabezados = worksheet.addRow(encabezados);
+        const filaEncabezados = worksheet.addRow(encabezados.map((col) => encabezadosMap[col] || col));
 
         // Estilizar encabezados
         filaEncabezados.eachCell((cell, colNumber) => {
@@ -972,7 +1015,7 @@ async function exportarExcel() {
         });
 
         // Configurar ancho de columnas
-        worksheet.columns = encabezados.map((header) => ({ width: header.length + 5 }));
+        worksheet.columns = encabezados.map((header) => ({ width: header.length + 20 }));
 
         // Descargar el archivo
         const buffer = await workbook.xlsx.writeBuffer();
@@ -995,6 +1038,10 @@ async function exportarExcel() {
         });
     }
 }
+
+
+
+
 
 
 
