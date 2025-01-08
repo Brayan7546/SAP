@@ -3,8 +3,9 @@ from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import pandas as pd
 import datetime
-import json
+import json   
 import re
+
 
 # Inicializar la base de datos
 db = MySQL()
@@ -42,6 +43,7 @@ def crear_tablas():
             tplnr VARCHAR(30),                          -- Ubicación técnica
             class VARCHAR(18),                          -- No de clase
             caracteristicas JSON
+
         );
     ''')
 
@@ -73,6 +75,7 @@ def crear_equipo(datos):
         datos['datsl'], datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'), datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
         datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'), datos.get('mapar'), datos.get('serge'), datos.get('abckz'), datos.get('gewrk'), datos.get('tplnr'),
         datos.get('class'), datos.get('caracteristicas')
+
     )
     try:
         cursor.execute(query, valores)
@@ -99,6 +102,7 @@ def obtener_todos_equipos():
     query = '''
         SELECT 
             id, datsl, eqtyp, shtxt, brgew, gewei, groes, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, mapar, serge, abckz, gewrk, tplnr, class, caracteristicas
+
         FROM equipos
     '''
     cursor.execute(query)
@@ -110,6 +114,7 @@ def obtener_todos_equipos():
         equipos.append({
             'id': row['id'],
             'datsl': row['datsl'].isoformat() if row['inbdt'] else None,
+
             'eqtyp': row['eqtyp'],
             'shtxt': row['shtxt'],
             'brgew': row['brgew'],
@@ -179,6 +184,7 @@ def actualizar_equipo(equipo_id, datos, table:bool = False):
         print ("error: %s" % error)
         return {'error': error}
     
+
     conn = db.connection
     cursor = conn.cursor()
     query = '''
@@ -207,11 +213,11 @@ def actualizar_equipo(equipo_id, datos, table:bool = False):
             datos.get('mapar'), datos.get('serge'), datos.get('abckz'), datos.get('gewrk'), 
             datos.get('tplnr'), datos.get('class'), datos.get('caracteristicas'), equipo_id
         )
+
     try:
         cursor.execute(query, valores)
         conn.commit()
         return {'message': 'Equipo actualizado exitosamente'}
-
     except Exception as e:
         return {'error': str(e)}
     finally:
@@ -240,6 +246,7 @@ def obtener_campos_por_clase(clase):
         WHERE clase = %s
     """
     try:
+
         cursor.execute(query, (clase,))
         campos = cursor.fetchall()
         return campos
@@ -310,3 +317,4 @@ def procesar_archivo_excel(file_path):
         equipos.append(equipo)
 
     return equipos
+

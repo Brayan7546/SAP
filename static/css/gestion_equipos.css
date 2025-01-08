@@ -10,6 +10,7 @@ body{
     box-shadow: 0 4px 10px rgba(123, 115, 235, 0.473);
     max-height: 84vh; /* Define una altura máxima */
     overflow-y: auto;  /* Habilita el scroll vertical */
+
 }
 
 .section {
@@ -24,10 +25,12 @@ body{
     margin-right: 10px;
 }
 
+
 .buttons {
     padding: 0;
     width: auto;
 }
+
 
 .buttons button{
     align-items: center;
@@ -64,6 +67,7 @@ body{
 
 .form-floating > label::first-letter{
     text-transform: capitalize;
+
 }
 
 .form-floating > .form-control {
@@ -77,8 +81,10 @@ body{
     color: rgb(0, 123, 255);
 }
 
+
 .form-floating > .form-control:focus ~ label::after, .form-floating>.form-control:not(:placeholder-shown)~label::after {
     background-color: transparent !important;
+
 }
 
 .withUnid{
@@ -103,6 +109,8 @@ body{
     align-items: center;
     width: 100%;
     padding-bottom: 20px;
+
+
 }
 
 #navigation-info p {
@@ -382,3 +390,4 @@ body{
     outline: 2px solid #013882;
     outline-offset: -2px;
 }
+

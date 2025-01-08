@@ -13,12 +13,14 @@ from config import config
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'xls', 'xlsx'}
 
+
 # Inicializar Flask fuera de `create_app`
 app = Flask(__name__)
 
 # Configuración de la aplicación
 app.config.from_object(config['development'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 # Inicializar la base de datos
 db.init_app(app)
@@ -77,6 +79,7 @@ def eliminar(equipo_id):
 def obtener_campos(clase):
     campos = obtener_campos_por_clase(clase)
     return jsonify(campos)  # Devuelve los datos directamente como JSON
+
 
 # Verifica si la extensión del archivo es permitida
 def allowed_file(filename):
@@ -202,6 +205,7 @@ def actualizar_equipos_route():
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 
 if __name__ == '__main__':

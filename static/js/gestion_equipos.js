@@ -14,7 +14,6 @@ function guardarEquipo() {
     const equipoId = document.getElementById('detalle-titulo').dataset.id || null;
     const url = equipoId ? `/equipos/${equipoId}` : '/equipos';
     const method = equipoId ? 'PUT' : 'POST';
-
     const datos = {
         datsl: document.getElementById('datsl').value || '',
         eqtyp: document.getElementById('eqtyp').value.trim() || '',
@@ -48,6 +47,7 @@ function guardarEquipo() {
     .then(response => response.json())
     .then(data => {
         if (data.error) {
+
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -76,6 +76,7 @@ function guardarEquipo() {
 
             toggleBotonEliminar(); // Mostrar u ocultar el botón de eliminar según el estado
             toggleEdicion(false); // Salir de modo edición
+
         }
     })
     .catch(error => {
@@ -109,6 +110,7 @@ function mostrarBotonEliminar() {
         btnEliminar.style.display = 'block'; // Mostrar el botón de eliminar
     }
 }
+
 
 
 
@@ -238,7 +240,7 @@ function cargarCamposDinamicos(clase) {
                 // Agregar el contenedor al div de campos dinámicos
                 camposDinamicos.appendChild(campoDiv);
             });
-        
+
         })
         .catch(error => console.error("Error al cargar los campos dinámicos:", error));
 }
@@ -1033,3 +1035,4 @@ function cargarEquipo(equipoId) {
             alert('No se pudo cargar la información del equipo.');
         });
 }*/
+
