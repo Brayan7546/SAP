@@ -14,7 +14,6 @@ function guardarEquipo() {
     const equipoId = document.getElementById('detalle-titulo').dataset.id || null;
     const url = equipoId ? `/equipos/${equipoId}` : '/equipos';
     const method = equipoId ? 'PUT' : 'POST';
-
     const datos = {
         datsl: document.getElementById('datsl').value || '',
         eqtyp: document.getElementById('eqtyp').value.trim() || '',
@@ -48,6 +47,7 @@ function guardarEquipo() {
     .then(response => response.json())
     .then(data => {
         if (data.error) {
+
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -76,6 +76,7 @@ function guardarEquipo() {
 
             toggleBotonEliminar(); // Mostrar u ocultar el botón de eliminar según el estado
             toggleEdicion(false); // Salir de modo edición
+
         }
     })
     .catch(error => {
@@ -112,6 +113,7 @@ function mostrarBotonEliminar() {
 
 
 
+
 document.addEventListener("DOMContentLoaded", () => {
     // Cargar clases al iniciar la página
     cargarClases();
@@ -121,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     classSelect.addEventListener("change", (event) => {
         const claseSeleccionada = event.target.value;
         if (claseSeleccionada) {
-            cargarCamposDinamicos(claseSeleccionada);
+            cargarCamposYDatosDinamicos(claseSeleccionada);
         } else {
             limpiarCamposDinamicos();
         }
@@ -172,76 +174,6 @@ function capitalizarPrimeraLetra(texto) {
     return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
 }
 
-// Función para cargar los campos dinámicos según la clase seleccionada
-function cargarCamposDinamicos(clase) {
-    fetch(`/clases/${clase}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error al cargar los campos: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("data recibida", data)
-            const camposDinamicos = document.getElementById("campos-dinamicos");
-            limpiarCamposDinamicos(); // Limpiar campos anteriores
-
-            data.forEach(campo => {
-                if (!campo.caracteristica || !campo.denominacion || !campo.tipo_campo) {
-                    console.warn("Campo con datos incompletos:", campo);
-                    return; // Ignorar campos incompletos
-                }
-            
-                // Crear el contenedor principal
-                const campoDiv = document.createElement("div");
-                campoDiv.className = campo.unidad ? "col-md-6 mb-3 form-floating withUnid" : "col-md-6 mb-3 form-floating";
-            
-                // Crear el input
-                const input = document.createElement("input");
-                input.type = obtenerTipoInput(campo.tipo_campo); // Determinar el tipo (NUM, CHAR, DATE)
-                input.id = campo.caracteristica;
-                input.name = campo.caracteristica;
-                input.className = "form-control";
-                input.maxLength = campo.ctd_posiciones;
-                input.placeholder = campo.unidad ? "" : " "; // Dejar vacío para form-floating, usar placeholder vacío para input-group
-            
-                // Configurar los decimales si el campo es de tipo "number"
-                if (campo.decimales && input.type === "number") {
-                    input.step = Math.pow(10, -campo.decimales).toString();
-                }
-            
-                // Crear el label
-                const label = document.createElement("label");
-                label.htmlFor = campo.caracteristica;
-                label.textContent = capitalizarPrimeraLetra(campo.denominacion);
-                if (!campo.unidad) {
-                    label.className = "form-label";
-                }
-            
-                // Caso con unidad
-                if (campo.unidad) {
-                    // Crear un span para la unidad
-                    const unidadSpan = document.createElement("span");
-                    unidadSpan.className = "input-group-text";
-                    unidadSpan.textContent = campo.unidad;
-            
-                    // Agregar el input y el span al contenedor
-                    campoDiv.appendChild(input);
-                    campoDiv.appendChild(label);
-                    campoDiv.appendChild(unidadSpan);
-                } else {
-                    // Caso sin unidad
-                    campoDiv.appendChild(input);
-                    campoDiv.appendChild(label);
-                }
-            
-                // Agregar el contenedor al div de campos dinámicos
-                camposDinamicos.appendChild(campoDiv);
-            });
-        
-        })
-        .catch(error => console.error("Error al cargar los campos dinámicos:", error));
-}
 
 // Función para limpiar los campos dinámicos
 function limpiarCamposDinamicos() {
@@ -597,7 +529,7 @@ function cargarEquipo(equipoId) {
             cargarDatosBasicos(data);
 
             // Cargar campos dinámicos
-            cargarDatosDinamicos(data.class, data.caracteristicas);
+            cargarCamposYDatosDinamicos(data.class, data.caracteristicas);
 
             // Marcar como activo el equipo en la lista
             marcarEquipoActivo(equipoId);
@@ -625,15 +557,26 @@ function cargarDatosBasicos(data) {
         'mapar', 'serge', 'abckz', 'gewrk', 'tplnr', 'class'
     ];
 
+    // Lista de campos que son fechas y necesitan conversión
+    const camposFecha = ['ansdt', 'inbdt', 'datsl'];
+
     campos.forEach(campo => {
         const input = document.getElementById(campo);
         if (input) {
-            input.value = data[campo] || '';
+            if (camposFecha.includes(campo) && data[campo]) {
+                // Convertir al formato YYYY-MM-DD si el campo es una fecha
+                const date = new Date(data[campo]);
+                const formattedDate = date.toISOString().split('T')[0]; // Extraer YYYY-MM-DD
+                input.value = formattedDate;
+            } else {
+                input.value = data[campo] || '';
+            }
             input.setAttribute('readonly', true); // Bloquear por defecto
             input.classList.add('bg-light'); // Opcional: Fondo gris
         }
     });
 }
+
 
 function normalizarClave(clave) {
     // Convierte la clave a mayúsculas y elimina unidades adicionales como "(A)", "(mm)", etc.
@@ -661,61 +604,6 @@ function formatearValorParaInput(tipo, valor) {
         return isNaN(numero) ? '' : numero; // Si no es número, devolver cadena vacía
     }
     return valor; // Retorna el valor sin modificar para otros tipos
-}
-
-function cargarDatosDinamicos(clase, caracteristicasJSON) {
-    if (!clase || !caracteristicasJSON) return;
-
-    let caracteristicas = {};
-    try {
-        caracteristicas = JSON.parse(caracteristicasJSON);
-    } catch (e) {
-        console.warn("Error al parsear características:", e);
-        return;
-    }
-
-    // Normaliza las claves del JSON de características
-    const caracteristicasNormalizadas = {};
-    for (let clave in caracteristicas) {
-        const claveNormalizada = normalizarClave(clave);
-        caracteristicasNormalizadas[claveNormalizada] = caracteristicas[clave];
-    }
-
-    fetch(`/clases/${clase}`)
-        .then(response => {
-            if (!response.ok) throw new Error('Error al cargar los campos dinámicos');
-            return response.json();
-        })
-        .then(campos => {
-            const contenedor = document.getElementById("campos-dinamicos");
-            contenedor.innerHTML = "";
-
-            // Obtén las claves normalizadas de las características
-            const clavesCaracteristicas = Object.keys(caracteristicasNormalizadas);
-
-            campos.forEach(campo => {
-                const claveNormalizadaCampo = normalizarClave(campo.caracteristica); // Normaliza clave esperada
-                
-                // Busca una clave aproximada en las características
-                const claveEncontrada = buscarClaveAproximada(claveNormalizadaCampo, clavesCaracteristicas);
-                const valor = claveEncontrada ? caracteristicasNormalizadas[claveEncontrada] : '';
-
-                const div = document.createElement("div");
-                div.className = "col-md-6 mb-3 form-floating";
-                div.innerHTML = `
-                    <input type="${obtenerTipoInput(campo.tipo_campo)}" 
-                           id="${campo.caracteristica}" 
-                           name="${campo.caracteristica}" 
-                           class="form-control bg-light" 
-                           value="${formatearValorParaInput(obtenerTipoInput(campo.tipo_campo), valor)}" 
-                           maxlength="${campo.ctd_posiciones || ''}" 
-                           readonly>
-                    <label for="${campo.caracteristica}">${campo.denominacion}</label>
-                `;
-                contenedor.appendChild(div);
-            });
-        })
-        .catch(error => console.error("Error al cargar los campos dinámicos:", error));
 }
 
 function toggleEdicion(forzarEdicion = null) {
@@ -1039,10 +927,76 @@ async function exportarExcel() {
     }
 }
 
+function cargarCamposYDatosDinamicos(clase, caracteristicasJSON = null) {
+    let caracteristicas = {};
+    
+    if (caracteristicasJSON) {
+        try {
+            caracteristicas = JSON.parse(caracteristicasJSON);
+        } catch (e) {
+            console.warn("Error al parsear características:", e);
+            return;
+        }
+    }
 
+    // Normaliza las claves del JSON de características
+    const caracteristicasNormalizadas = {};
+    for (let clave in caracteristicas) {
+        const claveNormalizada = normalizarClave(clave);
+        caracteristicasNormalizadas[claveNormalizada] = caracteristicas[clave];
+    }
 
+    fetch(`/clases/${clase}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error al cargar los campos dinámicos');
+            return response.json();
+        })
+        .then(campos => {
+            const contenedor = document.getElementById("campos-dinamicos");
+            limpiarCamposDinamicos(); // Limpiar campos anteriores
 
+            const clavesCaracteristicas = Object.keys(caracteristicasNormalizadas);
 
+            campos.forEach(campo => {
+                const claveNormalizadaCampo = normalizarClave(campo.caracteristica); // Normaliza clave esperada
+                const claveEncontrada = buscarClaveAproximada(claveNormalizadaCampo, clavesCaracteristicas);
+                const valor = claveEncontrada ? caracteristicasNormalizadas[claveEncontrada] : '';
+
+                const div = document.createElement("div");
+                div.className = campo.unidad ? "col-md-6 mb-3 form-floating withUnid" : "col-md-6 mb-3 form-floating";
+
+                const input = document.createElement("input");
+                input.type = obtenerTipoInput(campo.tipo_campo);
+                input.id = campo.caracteristica;
+                input.name = campo.caracteristica;
+                input.className = "form-control";
+                input.maxLength = campo.ctd_posiciones;
+                input.value = formatearValorParaInput(input.type, valor);
+                input.placeholder = campo.unidad ? "" : " ";
+                if (!caracteristicasJSON) {
+                    input.setAttribute("readonly", true);
+                }
+
+                if (campo.unidad) {
+                    const unidadSpan = document.createElement("span");
+                    unidadSpan.className = "input-group-text";
+                    unidadSpan.textContent = campo.unidad;
+                    div.appendChild(input);
+                    div.appendChild(unidadSpan);
+                } else {
+                    div.appendChild(input);
+                }
+
+                const label = document.createElement("label");
+                label.htmlFor = campo.caracteristica;
+                label.textContent = capitalizarPrimeraLetra(campo.denominacion);
+                div.appendChild(label);
+
+                contenedor.appendChild(div);
+            });
+        })
+        .catch(error => console.error("Error al cargar los campos dinámicos:", error));
+}
 
 
 
@@ -1080,3 +1034,4 @@ function cargarEquipo(equipoId) {
             alert('No se pudo cargar la información del equipo.');
         });
 }*/
+

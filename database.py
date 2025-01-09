@@ -3,8 +3,9 @@ from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import pandas as pd
 import datetime
-import json
+import json   
 import re
+
 
 # Inicializar la base de datos
 db = MySQL()
@@ -42,6 +43,7 @@ def crear_tablas():
             tplnr VARCHAR(30),                          -- Ubicación técnica
             class VARCHAR(18),                          -- No de clase
             caracteristicas JSON
+
         );
     ''')
 
@@ -73,6 +75,7 @@ def crear_equipo(datos):
         datos['datsl'], datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'), datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
         datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'), datos.get('mapar'), datos.get('serge'), datos.get('abckz'), datos.get('gewrk'), datos.get('tplnr'),
         datos.get('class'), datos.get('caracteristicas')
+
     )
     try:
         cursor.execute(query, valores)
@@ -99,6 +102,7 @@ def obtener_todos_equipos():
     query = '''
         SELECT 
             id, datsl, eqtyp, shtxt, brgew, gewei, groes, inbdt, eqart, answt, ansdt, waers, herst, herld, typbz, baujj, baumm, mapar, serge, abckz, gewrk, tplnr, class, caracteristicas
+
         FROM equipos
     '''
     cursor.execute(query)
@@ -110,6 +114,7 @@ def obtener_todos_equipos():
         equipos.append({
             'id': row['id'],
             'datsl': row['datsl'].isoformat() if row['inbdt'] else None,
+
             'eqtyp': row['eqtyp'],
             'shtxt': row['shtxt'],
             'brgew': row['brgew'],
@@ -135,8 +140,51 @@ def obtener_todos_equipos():
         })
     return equipos
 
+# Función auxiliar para validar datos
+def validar_datos_equipo(datos):
+    # Validar campos numéricos
+    campos_numericos = ['brgew', 'answt']
+    for campo in campos_numericos:
+        if campo in datos and datos[campo]:
+            try:
+                datos[campo] = float(datos[campo])
+            except ValueError:
+                return False, f'El campo {campo} debe ser un número'
+    
+    # Validar longitudes máximas
+    limites = {
+        'eqtyp': 1,
+        'shtxt': 40,
+        'gewei': 3,
+        'groes': 18,
+        'eqart': 10,
+        'waers': 5,
+        'herst': 30,
+        'herld': 3,
+        'typbz': 20,
+        'baujj': 4,
+        'baumm': 2,
+        'mapar': 40,
+        'serge': 40,
+        'abckz': 1,
+        'gewrk': 8,
+        'tplnr': 30
+    }
+    
+    for campo, limite in limites.items():
+        if campo in datos and datos[campo] and len(str(datos[campo])) > limite:
+            return False, f'El campo {campo} excede el límite de {limite} caracteres'
+    
+    return True, None
 
-def actualizar_equipo(equipo_id, datos):
+def actualizar_equipo(equipo_id, datos, table:bool = False):
+    # Validar datos antes de actualizar
+    valido, error = validar_datos_equipo(datos)
+    if not valido:
+        print ("error: %s" % error)
+        return {'error': error}
+    
+
     conn = db.connection
     cursor = conn.cursor()
     query = '''
@@ -146,13 +194,26 @@ def actualizar_equipo(equipo_id, datos):
             mapar = %s, serge = %s, abckz = %s, gewrk = %s, tplnr = %s, class = %s, caracteristicas = %s
         WHERE id = %s
     '''
-    valores = (
-        datos['datsl'], datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'),
-        datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
-        datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'),
-        datos.get('mapar'), datos.get('serge'), datos.get('abckz'), datos.get('gewrk'), datos.get('tplnr'),
-        datos.get('class'), datos.get('caracteristicas'), equipo_id
-    )
+    
+    if not table:
+        valores = (
+            datos['datsl'], datos['eqtyp'], datos['shtxt'], datos.get('brgew'), datos.get('gewei'), datos.get('groes'),
+            datos.get('inbdt'), datos.get('eqart'), datos.get('answt'), datos.get('ansdt'), datos.get('waers'),
+            datos.get('herst'), datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'),
+            datos.get('mapar'), datos.get('serge'), datos.get('abckz'), datos.get('gewrk'), datos.get('tplnr'),
+            datos.get('class'), datos.get('caracteristicas'), equipo_id
+        )
+        
+    else:
+        valores = (
+            datos.get('datsl'), datos.get('eqtyp'), datos.get('shtxt'), datos.get('brgew'), 
+            datos.get('gewei'), datos.get('groes'), datos.get('inbdt'), datos.get('eqart'), 
+            datos.get('answt'), datos.get('ansdt'), datos.get('waers'), datos.get('herst'),
+            datos.get('herld'), datos.get('typbz'), datos.get('baujj'), datos.get('baumm'),
+            datos.get('mapar'), datos.get('serge'), datos.get('abckz'), datos.get('gewrk'), 
+            datos.get('tplnr'), datos.get('class'), datos.get('caracteristicas'), equipo_id
+        )
+
     try:
         cursor.execute(query, valores)
         conn.commit()
@@ -185,6 +246,7 @@ def obtener_campos_por_clase(clase):
         WHERE clase = %s
     """
     try:
+
         cursor.execute(query, (clase,))
         campos = cursor.fetchall()
         return campos
@@ -255,3 +317,4 @@ def procesar_archivo_excel(file_path):
         equipos.append(equipo)
 
     return equipos
+

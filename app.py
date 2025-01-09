@@ -13,12 +13,14 @@ from config import config
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'xls', 'xlsx'}
 
+
 # Inicializar Flask fuera de `create_app`
 app = Flask(__name__)
 
 # Configuración de la aplicación
 app.config.from_object(config['development'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 # Inicializar la base de datos
 db.init_app(app)
@@ -77,6 +79,7 @@ def eliminar(equipo_id):
 def obtener_campos(clase):
     campos = obtener_campos_por_clase(clase)
     return jsonify(campos)  # Devuelve los datos directamente como JSON
+
 
 # Verifica si la extensión del archivo es permitida
 def allowed_file(filename):
@@ -155,6 +158,54 @@ def subir_equipos_masivo():
     except Exception as e:
         print("Error en el servidor:", str(e))
         return jsonify({'error': str(e)}), 500
+
+@app.route('/actualizar_equipo/<int:equipo_id>', methods=['POST'])
+def actualizar_equipo_route(equipo_id):
+    try:
+        datos = request.json
+        print(f"Datos recibidos para actualizar equipo {equipo_id}: {datos}")
+        resultado = actualizar_equipo(equipo_id, datos, table = True)
+        print(f"resultado a : {resultado}")
+        if 'error' in resultado:
+            return jsonify({'success': False, 'error': resultado['error']})
+        return jsonify({'success': True, 'message': resultado['message']})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/actualizar_equipos', methods=['POST'])
+def actualizar_equipos_route():
+    try:
+        data = request.json
+        equipos = data.get('equipos', [])
+        resultados = []
+
+        for equipo_data in equipos:
+            equipo_id = equipo_data.pop('id')
+            resultado = actualizar_equipo(equipo_id, equipo_data, table=True)
+            resultados.append({
+                'id': equipo_id,
+                'success': 'error' not in resultado,
+                'message': resultado.get('message') or resultado.get('error')
+            })
+
+        # Si hay algún error, hacer rollback de todas las actualizaciones
+        if any(not r['success'] for r in resultados):
+            db.connection.rollback()
+            return jsonify({
+                'success': False, 
+                'error': 'Algunas actualizaciones fallaron',
+                'resultados': resultados
+            })
+
+        db.connection.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Todos los equipos fueron actualizados exitosamente',
+            'resultados': resultados
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 
 if __name__ == '__main__':

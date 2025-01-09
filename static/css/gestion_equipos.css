@@ -10,6 +10,7 @@ body{
     box-shadow: 0 4px 10px rgba(123, 115, 235, 0.473);
     max-height: 84vh; /* Define una altura máxima */
     overflow-y: auto;  /* Habilita el scroll vertical */
+
 }
 
 .section {
@@ -24,10 +25,12 @@ body{
     margin-right: 10px;
 }
 
+
 .buttons {
     padding: 0;
     width: auto;
 }
+
 
 .buttons button{
     align-items: center;
@@ -64,6 +67,7 @@ body{
 
 .form-floating > label::first-letter{
     text-transform: capitalize;
+
 }
 
 .form-floating > .form-control {
@@ -77,8 +81,10 @@ body{
     color: rgb(0, 123, 255);
 }
 
+
 .form-floating > .form-control:focus ~ label::after, .form-floating>.form-control:not(:placeholder-shown)~label::after {
     background-color: transparent !important;
+
 }
 
 .withUnid{
@@ -103,6 +109,8 @@ body{
     align-items: center;
     width: 100%;
     padding-bottom: 20px;
+
+
 }
 
 #navigation-info p {
@@ -312,3 +320,74 @@ body{
     color: #003366;
     font-weight: bold;
 }
+
+/* Estilos para la tabla */
+
+/* Agregar estos estilos en gestion_equipos.css */
+.fullscreen-table {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 1000;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    margin-bottom: 20px;
+}
+
+.table-header .btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.table-container {
+    flex: 1;
+    overflow: auto;
+}
+
+#equipos-table {
+    width: 100% !important;
+    border-collapse: collapse;
+}
+
+#equipos-table th,
+#equipos-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+#equipos-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    text-align: center;
+}
+
+#equipos-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+#equipos-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.editing-mode td[contenteditable="true"]:hover {
+    background-color: #e9ecef;
+    cursor: pointer;
+}
+
+.editing-mode td[contenteditable="true"]:focus {
+    background-color: #fff;
+    outline: 2px solid #013882;
+    outline-offset: -2px;
+}
+
